@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>chat room</title>
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css"> -->
+        <style>
+            body {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              
+              margin: 0;
+            }
+          </style>
+    </head>
+
+    <body align="center">
+        <section class="section">
+            <div class="container">
+                <div class="columns is-multiline">
+                    <div class="column is-6 is-offset-3 mb-6">
+                        <section class="hero is-primary">
+                            <div class="hero-body">
+                                <h3 class="title">
+                                    == NoWaste - Chat room ==
+                                </h3>
+                                <h4 class="subtitle">
+                                    You are in room {{room_name}}
+                                </h4>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="column is-6 is-offset-3">
+                        <div class="box">
+                            <div id="chat-messages" style="max-height: 350px; width: 300px; overflow-y: scroll; background-color: lightcyan;">{% for m in messages %}<b>{{ m.sender }}</b>: {{ m.message }}<br>{% endfor %}</div>
+                        </div>
+                        <br>
+                        <div class="field">
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Message" id="chat-message-input" style="background-color: lightcyan;">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <button class="button is-info" id="chat-message-submit" style="background-color: aquamarine;">Submit</button>
+                        </div>
+
+                        <small class="has-text-grey-light">Your user_id: {{ user_id }}</small><br>
+                        <small class="has-text-grey-light">Your username: {{ username }}</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+       {{ room_name|json_script:"json-room_name" }}
+       {{ user_id|json_script:"json-user_id" }}
+       {{ username|json_script:"json-username" }}
+
+        <script>
+            function scrollToBottom() {
+                let objDiv = document.getElementById("chat-messages");
+                objDiv.scrollTop = objDiv.scrollHeight;
+            }
+
+            scrollToBottom();
+
+            const roomName = JSON.parse(document.getElementById('json-room_name').textContent);
+            const userID = JSON.parse(document.getElementById('json-user_id').textContent);
+            var username = JSON.parse(document.getElementById('json-username').textContent);
+
+            const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            // + ':8000'
+            + '/ws/chat/room/'
+            // + '/chat/room/'
+            + roomName
+            + '/'
+        );
+
+            chatSocket.onmessage = function(e) {
+                console.log('onmessage');
+
+                const data = JSON.parse(e.data);
+
+                if (data.message) {
+                    document.querySelector('#chat-messages').innerHTML += ('<b>' + data.user_id + '</b>: ' + data.message + '<br>');
+                } else {
+                    alert('The message is empty!');
+                }
+
+                scrollToBottom();
+            };
+
+            chatSocket.onclose = function(e) {
+                console.log('The socket close unexpectadly');
+            };
+
+            document.querySelector('#chat-message-submit').onclick = function(e) {
+                const messageInputDom = document.querySelector('#chat-message-input');
+                const message = messageInputDom.value;
+
+                chatSocket.send(JSON.stringify({
+                    'message': message,
+                    'user_id': userID,
+                    'username': username,
+                    'room_name': roomName,
+                    // 'sender_type':"SERVER"
+                }));
+
+                messageInputDom.value = '';
+            };
+        </script>
+    </body>
+</html>

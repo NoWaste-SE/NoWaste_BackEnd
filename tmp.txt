@@ -1,0 +1,7 @@
+{
+'rows': [
+    {'elements': 
+    [{'status': 'Ok', 'duration': {'value': 77461, 'text': '۲۱ ساعت ۳۱ دقیقه'},'distance': {'value': 1625282, 'text': '۱۶۵۰ کیلومتر'}},
+      {'status': 'Ok', 'duration': {'value': 49545, 'text': '۱۳ ساعت ۴۶ دقیقه'}, 'distance': {'value': 931083, 'text': '۹۵۰ کیلومتر'}},
+       {'status': 'Ok', 'duration': {'value': 49545, 'text': '۱۳ ساعت ۴۶ دقیقه'}, 'distance': {'value': 931083, 'text': '۹۵۰ کیلومتر'}}]
+       }]
