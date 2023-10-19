@@ -12,11 +12,14 @@ class Food(models.Model):
     price = models.DecimalField(decimal_places=2,max_digits=20 , null= True )
     ingredients = models.CharField(max_length=2048, null=True , blank=True)
     food_pic = models.TextField(default=default_food_pic, blank=True, null=True)
+    food_pic2 = models.TextField(blank=True, null=True)
     restaurant = models.ForeignKey(Restaurant,on_delete= models.CASCADE , related_name= 'food' )
     remainder = models.IntegerField(default=0)
     def save(self, *args, **kwargs):
         if self.food_pic == "" or self.food_pic==None:
             self.food_pic = default_food_pic
+        if self.food_pic2 == "" or self.food_pic2==None:
+            self.food_pic2 = None
         super().save(*args, **kwargs)
     def __str__(self) -> str:
         return self.name

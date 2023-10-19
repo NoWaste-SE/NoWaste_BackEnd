@@ -90,7 +90,7 @@ class RestaurantSearchSerializer(serializers.ModelSerializer):
 class FoodFilterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Food
-        fields = ['name', 'price', 'ingredients', 'food_pic', 'restaurant', 'remainder']
+        fields = ['name', 'price', 'ingredients', 'food_pic', 'food_pic2', 'restaurant', 'remainder']
         lookup_field = 'id'
 
 class FoodSerializer(serializers.ModelSerializer):
@@ -98,7 +98,7 @@ class FoodSerializer(serializers.ModelSerializer):
     class Meta :
         model = Food
         # fields = '__all__'
-        fields = ['name','price','ingredients','food_pic','restaurant_id','id', 'remainder']
+        fields = ['name','price','ingredients','food_pic', 'food_pic2', 'restaurant_id','id', 'remainder']
 
 
 class RestaurantManagerSerializer(serializers.ModelSerializer):
