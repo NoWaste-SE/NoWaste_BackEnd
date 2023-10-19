@@ -1,0 +1,21 @@
+[0;1;32m●[0m emperor.uwsgi.service - uwsgi emperor for NoWaste website
+     Loaded: loaded (/etc/systemd/system/emperor.uwsgi.service; enabled; vendor preset: enabled)
+     Active: [0;1;32mactive (running)[0m since Tue 2023-10-17 19:41:07 UTC; 7s ago
+   Main PID: 31557 (uwsgi)
+      Tasks: 2 (limit: 2310)
+     Memory: 45.4M
+        CPU: 6.835s
+     CGroup: /system.slice/emperor.uwsgi.service
+             ├─31557 /home/ubuntu/env/md/bin/uwsgi --emperor /home/ubuntu/env/md/vassals --uid www-data --gid www-data
+             └─31558 /home/ubuntu/env/md/bin/uwsgi --ini NoWaste_uwsgi.ini
+
+Oct 17 19:41:07 ubuntu-g1-small2-foroogh-1 uwsgi[31557]: current working directory: /
+Oct 17 19:41:07 ubuntu-g1-small2-foroogh-1 uwsgi[31557]: detected binary path: /home/ubuntu/env/md/bin/uwsgi
+Oct 17 19:41:07 ubuntu-g1-small2-foroogh-1 uwsgi[31557]: !!! no internal routing support, rebuild with pcre support !!!
+Oct 17 19:41:07 ubuntu-g1-small2-foroogh-1 uwsgi[31557]: *** WARNING: you are running uWSGI without its master process manager ***
+Oct 17 19:41:07 ubuntu-g1-small2-foroogh-1 uwsgi[31557]: your processes number limit is 7701
+Oct 17 19:41:07 ubuntu-g1-small2-foroogh-1 uwsgi[31557]: your memory page size is 4096 bytes
+Oct 17 19:41:07 ubuntu-g1-small2-foroogh-1 uwsgi[31557]: detected max file descriptor number: 1024
+Oct 17 19:41:07 ubuntu-g1-small2-foroogh-1 uwsgi[31557]: *** starting uWSGI Emperor ***
+Oct 17 19:41:07 ubuntu-g1-small2-foroogh-1 uwsgi[31558]: *** has_emperor mode detected (fd: 6) ***
+Oct 17 19:41:07 ubuntu-g1-small2-foroogh-1 uwsgi[31558]: [uWSGI] getting INI configuration from NoWaste_uwsgi.ini
