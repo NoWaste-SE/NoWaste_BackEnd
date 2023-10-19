@@ -20,6 +20,7 @@ class MyAuthor(AbstractBaseUser):
     lon = models.FloatField(default= 0 ,blank= True,null= True)
     objects = AuthorManager()
     email = models.EmailField(unique= True)
+    name = models.CharField(max_length=255)
     is_staff = models.BooleanField(default= False)
     is_active = models.BooleanField(default= True)
     is_superuser = models.BooleanField(default= False)
@@ -35,7 +36,7 @@ class MyAuthor(AbstractBaseUser):
         return True
 
 class RestaurantManager(MyAuthor):
-    name = models.CharField(max_length=255, unique=True)
+    # name = models.CharField(max_length=255, unique=True)
     manager_image = models.TextField(null= True , blank= True)
     number = models.CharField(max_length= 14,blank= True, null=True)
     def __str__(self) -> str:
@@ -71,7 +72,7 @@ class Restaurant(models.Model):
 
 class Customer(MyAuthor):
     address = models.CharField(max_length=255 , default= "")
-    name = models.CharField(max_length=255)
+    # name = models.CharField(max_length=255)
     username = models.CharField(max_length=255, blank=True)
     customer_img = models.TextField(blank= True , null= True)
     phone_number = models.CharField(max_length=14,blank= True)
