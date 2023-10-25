@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.sessions",
     "django.contrib.contenttypes",
-    # "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
@@ -50,25 +49,13 @@ INSTALLED_APPS = [
     'django_filters',
     'chat',
     'cities_light',
-    # 'django-cities-light',
-    # 'cities',
-    # 'rest_framework_jwt',
 ]
 
-# JWT_AUTH = {
-#     'JWT_SECRET_KEY': 'your-secret-key',
-#     'JWT_ALGORITHM': 'HS256',
-#     'JWT_ALLOW_REFRESH': True,
-#     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
-#     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
-# }
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
     'rest_framework.authentication.TokenAuthentication',
     ),
-    # 'DEFUAULT_PERMISSION_CLASSES':[
-    #     'rest_framework.permissions.AllowAny'
-    # ]
 }
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -176,20 +163,15 @@ EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-# EMAIL_HOST_USER = 'NoWaste.39@gmail.com'
-# EMAIL_HOST_PASSWORD = 'tznlpoehlwahkjtg'
 EMAIL_HOST_USER = 'gen39.nowaste@gmail.com'
 EMAIL_HOST_PASSWORD = 'kjdkhcyjbllacpnv'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ORIGIN_WHITELIST = (
-#        'http://127.0.0.1',
-# )
+
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        # 'BACKEND': 'channels.layers.InMemoryChannelLayer',
         "CONFIG": {
             "hosts": [("127.0.0.1" , 6379)],
         },
@@ -200,4 +182,4 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR,'static')
 ]
 
-# CITIES_LIGHT_CITY_SOURCES = ['openstreetmap']
+

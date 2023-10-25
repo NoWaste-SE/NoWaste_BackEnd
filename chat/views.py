@@ -18,100 +18,26 @@ from django.db.models import Q
 from itertools import chain
 from rest_framework import serializers
 
-class ChatViewSet(ModelViewSet):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-    queryset = Chat.objects.all()
-    serializer_class = ChatSerializer
-    @action(
-        detail=False,
-        methods=['get', 'post'],
-        url_path=r'index',
-        url_name='chat_index',
-        permission_classes=[AllowAny]
-    )
-    def index(self, request):
-        return render(request, 'chat/index.html')
-    
-    # @action(
-    #     detail=True,
-    #     methods=['get', 'post'],
-    #     url_path=r'room/(?P<room_name>\w+)/user_id/(?P<user_id>\w+)',
-    #     url_name='chat_room',
-    #     permission_classes=[AllowAny]
-    # )
-    # def room(self, request, room_name, user_id):
-    #     messages = Chat.objects.filter(room=room_name)
-    #     print("messssssages22222:")
-    #     print (messages)
-    #     return render(request, 'chat/room.html', {'room_name': room_name, 'user_id': user_id, 'messages': messages})
-    
-    @action(
-        detail=False,
-        methods=['get', 'post'],
-        url_path=r'room/messages/(?P<room_name>\w+)',
-        url_name='chat_room',
-        permission_classes=[IsAuthenticated]
-    )
-    def get_room_messages(self, request, room_name, *args, **kwargs):
-        
-        try:
-            chats = Chat.objects.filter(room_name=room_name)
-            serializer = ChatSerializer(chats, many=True)
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        except Exception as error:
-            return Response(error, status=status.HTTP_400_BAD_REQUEST)
-        
-
-    def room(request):
-        custid = request.kwargs['custId']
-        mngid = request.kwargs['mngId']
-        room_name = f'{custid}_{mngid}'
-        messages = Chat.objects.filter(room_name=room_name)
-        # return render(request, 'chat/room.html', {'room_name': room_name, 'messages': messages})
-        return render(request, {'room_name': room_name, 'messages': messages})
+'''Get chat messages of a specific room between a specific customer and manager'''
 def room(request,custId,mngId):
-    # custid = request.kwargs['custId']
-    # mngid = request.kwargs['mngId']
     custid = custId
     mngid = mngId
     room_name = f'{custid}_{mngid}'
     messages = Chat.objects.filter(room_name=room_name)
-    # return render(request, 'chat/room.html', {'room_name': room_name, 'messages': messages})
-    # return render(request, {'room_name': room_name, 'messages': messages})
-    # return HttpResponse( json.dumps( {'room_name': room_name, 'messages': messages} ) )
     serializer = ChatSerializer(messages, many=True)
     return HttpResponse(serializer.data,status=status.HTTP_200_OK)
-    return HttpResponse(data, content_type="application/json")
-    
+
+'''Get the names of people who a person has chated with them  '''  
 def get_names(request,*args,**kwargs):
-    uid = kwargs['user_id']
-    rcvs = Chat.objects.filter( sender_id=uid).select_related('reciever').all()
-    # print("***************************************************************************8")
-    # print(r_names)
-    snds = Chat.objects.filter( reciever_id=uid).select_related('sender').all()
-    # print("***************************************************************************8")
-    # print(s_names)
-    # for s in s_names :
-    #     print("&&&&&&&&&&&&&&&")
-    #     print(s)
-    # r_names = r_names.values('name')
-    # s_names = s_names.values('name')                    
+    uid = kwargs['user_id'] #get the user id which has send the request
+    rcvs = Chat.objects.filter( sender_id=uid).select_related('reciever').all() #the get the recievers which the user was sender of the message
+    snds = Chat.objects.filter( reciever_id=uid).select_related('sender').all()    #the senders which the user was sender of the message               
     names = {}
     name = ""
-    print(rcvs)
-    print("&&&&&&&&&&&&&&&&&&&&")
-    print(snds)
     if rcvs.count()>0 :
-        print(rcvs.count())
-        print(rcvs)
         for rcv in rcvs:
             if(rcv.reciever.role == 'customer'):
                 try :
-                    print("*********************************")
-                    print(rcv.reciever.id)
-                    print(Customer.objects.get(myauthor_ptr_id = rcv.reciever.id))
-                    print("****************************")
                     name = Customer.objects.get(myauthor_ptr_id = rcv.reciever.id).name
                 except Exception as E :
                     return HttpResponse("There is not any reciever with the given Id and email {rcv.reciever.email}" , status=status.HTTP_404_NOT_FOUND)
@@ -124,9 +50,7 @@ def get_names(request,*args,**kwargs):
     if snds.count() >0 :
         for snd in snds:
             if(snd.sender.role == 'customer'):
-                print("****************************",snd.sender.id)
                 try:
-                    # print(Customer.objects.get(myauthor_ptr_id = snd.sender.id))
                     name = Customer.objects.get(myauthor_ptr_id = snd.sender.id).name
                 except Exception as E :
                     return HttpResponse("There is not any sender with the given Id" , status=status.HTTP_404_NOT_FOUND)
@@ -136,9 +60,9 @@ def get_names(request,*args,**kwargs):
                 except Exception as E :
                     return HttpResponse("There is not any sender with the given Id" , status=status.HTTP_404_NOT_FOUND)           
             names[name] = snd.sender.id
-    # names = Chat.objects.filter(Q(sender_id= uid) | Q(reciever_id = uid )).
     return  HttpResponse( json.dumps( names ) )
 
+# developer API for cleaning database :)
 def delete_all_chats(request):
     messages =  Chat.objects.all()
     for ms in messages:
