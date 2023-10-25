@@ -2,12 +2,10 @@
 import json
 from django.contrib.auth import get_user_model
 from asgiref.sync import async_to_sync,  sync_to_async
-from channels.generic.websocket import WebsocketConsumer , AsyncWebsocketConsumer
+from channels.generic.websocket import WebsocketConsumer
 from .models import * 
 from User.models import *
 from datetime import datetime
-
-# room_name = custId&mngId
 
 class ChatConsumer(WebsocketConsumer):
     # def connect(self,room_name):
@@ -59,7 +57,7 @@ class ChatConsumer(WebsocketConsumer):
         )
 
 
-        # Receive message from room group
+    # Receive message from room group
     def chat_message(self, event):
         message = event['message']
         user_id = event['user_id']        

@@ -12,7 +12,6 @@ import django
 
 from django.urls import re_path 
  
-#from chat.consumers import ChatConsumer 
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "NoWaste.settings")
 
@@ -26,8 +25,6 @@ from chat.consumers import ChatConsumer
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
-# from chat.routing import websocket_urlpatterns
-from .routing import websocket_urlpatterns
 
 
 
@@ -37,7 +34,6 @@ application = ProtocolTypeRouter(
     {
         "http": application,
         "websocket": AllowedHostsOriginValidator(
-           # AuthMiddlewareStack(URLRouter(websocket_urlpatterns))
              AuthMiddlewareStack(URLRouter([
                      re_path(r'ws/chat/room/(?P<room_name>.*)/$', ChatConsumer.as_asgi()),
                  ]))
