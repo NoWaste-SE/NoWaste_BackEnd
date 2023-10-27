@@ -55,7 +55,7 @@ class SignUpView(APIView):
     permission_classes = (permissions.AllowAny,)
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid(raise_exception= True):
+        if serializer.is_valid(raise_exception= True) and not MyAuthor.objects.filter(email = request.data['email']).exists():
             vc_code = random.randint(100000, 999999)
             instance = serializer.save()
             instance.vc_code = vc_code
