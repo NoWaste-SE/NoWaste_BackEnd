@@ -22,7 +22,7 @@ class MyAuthor(AbstractBaseUser):
     is_active = models.BooleanField(default= True)
     is_superuser = models.BooleanField(default= False)
     is_admin = models.BooleanField(default=False)
-    password = models.CharField(max_length=16,validators=[MinLengthValidator(4)])
+    password = models.CharField(max_length=128,validators=[MinLengthValidator(4)])
     role = models.CharField(max_length=255, default="customer")
     # For checking permissions. to keep it simple all admin have ALL permissions
     def has_perm(self, perm, obj=None):

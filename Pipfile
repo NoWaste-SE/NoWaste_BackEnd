@@ -17,6 +17,7 @@ tzdata = "==2022.7"
 django-filter = "==23.1"
 django-rest-framework-nested = "*"
 djangorestframework-jwt = "==1.11.0"
+mysqlclient = "*"
 
 [dev-packages]
 
