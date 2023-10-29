@@ -12,12 +12,6 @@ from .views import *
 # from .views import *
 
 
-
-app_name = 'chat'
-
-router = routers.DefaultRouter()
-router.register('', ChatViewSet, basename='chat')
-
 urlpatterns = [
     path('room/<int:custId>/<int:mngId>/', room, name='room'),
     path('<int:user_id>/', get_names, name='user-contacts'),
