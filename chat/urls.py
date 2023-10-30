@@ -10,7 +10,6 @@ from rest_framework_nested import routers
 from .views import *
 
 
-
 urlpatterns = [
     path('room/<int:custId>/<int:mngId>/', room, name='room'),
     path('<int:user_id>/', get_names, name='user-contacts'),

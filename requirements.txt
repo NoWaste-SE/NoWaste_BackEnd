@@ -24,7 +24,7 @@ django-model-utils==4.3.1
 django-rest-framework-nested==0.0.1
 djangorestframework==3.14.0
 djangorestframework-jwt==1.11.0
-djangorestframework-simplejwt==5.2.2
+djangorestframework-simplejwt==5.3.0
 ecdsa==0.18.0
 future==0.18.3
 hyperlink==21.0.0

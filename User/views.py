@@ -19,6 +19,7 @@ from django.forms import ValidationError
 import random , string
 import json
 from cities_light.models import Country, City
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 '''Email Verification class for signing up'''
 class VerifyEmail(APIView):
@@ -74,37 +75,39 @@ class SignUpView(APIView):
         return Response(serializer.data)
     
 '''Login API view'''   
-class LoginView(APIView):
-    serializer_class = MyAuthorSerializer
-    permission_classes = (permissions.AllowAny,)
+class LoginView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
-        email = request.data.get('email')
-        password = request.data.get('password')
-        try :
-            user = MyAuthor.objects.get(email = email)
+        response = super().post(request, *args, **kwargs)
+        access_token = response.data['access']
+        refresh_token = response.data['refresh']
+        if response.status_code == 200:
+            email = request.data.get('email')
+            password = request.data.get('password')
+            try :
+                user = MyAuthor.objects.get(email = email)
 
-        except Exception as error :
-            return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
-        if user is not None and user.check_password(password):
-            id = user.id
-            token, _ = Token.objects.get_or_create(user_id = id)
-            if user.role == "customer":
-                c = Customer.objects.get (email = email)
-                name = c.name
-                WalletBalance = c.wallet_balance
-                listOfFavorite = list(c.list_of_favorites_res.values_list('name', flat=True))
-                result_fav = []
-                for r in listOfFavorite:
-                    res = Restaurant.objects.get(name = r)
-                    result_fav.append({'address': res.address, 'name': res.name, 'restaurant_image': res.restaurant_image, 'discount': res.discount, 'number': res.number, 'rate': res.rate, 'date_of_establishment': res.date_of_establishment, 'description': res.description, 'id': res.id})
-                # listOfFavorite = list(c.list_of_favorites_res)
-                return Response({'token': token.key,'id' : user.id, 'wallet_balance':WalletBalance, 'role':user.role, 'list_of_favorites_res':result_fav, 'name':name})
+            except Exception as error :
+                return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+            if user is not None and user.check_password(password):
+                id = user.id
+                if user.role == "customer":
+                    c = Customer.objects.get (email = email)
+                    name = c.name
+                    WalletBalance = c.wallet_balance
+                    listOfFavorite = list(c.list_of_favorites_res.values_list('name', flat=True))
+                    result_fav = []
+                    for r in listOfFavorite:
+                        res = Restaurant.objects.get(name = r)
+                        result_fav.append({'address': res.address, 'name': res.name, 'restaurant_image': res.restaurant_image, 'discount': res.discount, 'number': res.number, 'rate': res.rate, 'date_of_establishment': res.date_of_establishment, 'description': res.description, 'id': res.id})
+                    # listOfFavorite = list(c.list_of_favorites_res)
+                    return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'wallet_balance':WalletBalance, 'role':user.role, 'list_of_favorites_res':result_fav, 'name':name})
+                else:
+                    r = RestaurantManager.objects.get(email = email)
+                    return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'role':user.role, 'name':r.name})
             else:
-                r = RestaurantManager.objects.get(email = email)
-                return Response({'token': token.key,'id' : user.id, 'role':user.role, 'name':r.name})
-
+                return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+            return response
     def get(self,request):
         serializer = MyAuthorSerializer()
         return Response(serializer.data)
