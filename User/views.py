@@ -17,6 +17,7 @@ from django.template.loader import render_to_string
 from django.core.validators import EmailValidator
 from django.forms import ValidationError
 import random , string
+import csv
 import json
 from cities_light.models import Country, City
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -388,3 +389,16 @@ def get_lat_long(user_id):
     cust = get_object_or_404(Customer,id = user_id)
     content = JSONRenderer().render({'lat':cust.lat,'long':cust.lon})
     return HttpResponse(content, content_type='application/json')
+
+'''download restaurants informations as excel in admin panel'''
+class RestaurantInfoExportCSV(APIView):
+    def get(self,request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="restaurants-info.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Name', 'Type', 'Address', 'Discount', 'Rate', 'Number', 'Manager Name'])
+
+        restaurants = Restaurant.objects.all()
+        for res in restaurants:
+            writer.writerow([str(res.name), str(res.type), str(res.address), str(res.discount), str(res.rate), str(res.number), str(res.manager.name)])
+        return response
