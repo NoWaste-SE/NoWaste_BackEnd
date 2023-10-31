@@ -93,17 +93,49 @@ ASGI_APPLICATION = "NoWaste.asgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.mysql",
+#         "NAME": "NoWaste",
+#         "HOST": 'localhost',
+#         "PORT": 3306,
+#         "USER": 'root',
+#         "PASSWORD": 'neginneg6669'
+#     }
+# }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'sql12657524',
+#         'USER': 'sql12657524',
+#         'PASSWORD': 'RBaf54B1z8',
+#         'HOST': 'sql12.freesqldatabase.com',
+#         'PORT': '3306',
+#     }
+# }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'gendb',
+#         'USER': 'nowaste',
+#         'PASSWORD': 'q4bAICHOdBpJ89lRFtlYpw',
+#         'HOST': 'ninja-cobra-11334.8nj.cockroachlabs.cloud',
+#         'PORT': '26257',
+#     }
+# }
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "NoWaste",
-        "HOST": 'localhost',
-        "PORT": 3306,
-        "USER": 'root',
-        "PASSWORD": 'neginneg6669'
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'gendb',
+        'USER': 'nowaste',
+        'PASSWORD': '4ysdUGTgpuAYqmUYsY-l1Q',
+        'HOST': 'ninja-cobra-11334.8nj.cockroachlabs.cloud',
+        'PORT': '26257',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
