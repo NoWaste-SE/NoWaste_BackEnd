@@ -10,7 +10,7 @@ from .permissions import  IsAdminOrReadOnly
 from .serializer import *
 from .models import *
 from .filters import RestaurantFilter , FoodFilter
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import TokenAuthentication,BasicAuthentication
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.renderers import JSONRenderer
@@ -114,7 +114,7 @@ class FoodViewSet(ModelViewSet):
     
 '''class for Listing foods of a Restaurant or adding to Restaurant's foods by its Restaurant manager'''
 class ManagerFoodListCreateAPIView(generics.ListCreateAPIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication,BaseAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = FoodSerializer
     def get_queryset(self):
