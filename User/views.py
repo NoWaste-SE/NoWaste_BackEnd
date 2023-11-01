@@ -298,7 +298,7 @@ class AddRemoveFavorite(APIView):
         serializer = AddRemoveFavoriteSerializer()
         return Response(serializer.data)
 
-'''Charg Wallet API'''  
+'''Charg Wallet API'''
 class ChargeWalletView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -396,9 +396,9 @@ class RestaurantInfoExportCSV(APIView):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="restaurants-info.csv"'
         writer = csv.writer(response)
-        writer.writerow(['Name', 'Type', 'Address', 'Discount', 'Rate', 'Number', 'Manager Name'])
+        writer.writerow(['Name', 'Type', 'Address', 'Discount', 'Rate', 'Number', 'Manager Name', 'Manager Email'])
 
         restaurants = Restaurant.objects.all()
         for res in restaurants:
-            writer.writerow([str(res.name), str(res.type), str(res.address), str(res.discount), str(res.rate), str(res.number), str(res.manager.name)])
+            writer.writerow([str(res.name), str(res.type), str(res.address), str(res.discount), str(res.rate), str(res.number), str(res.manager.name), str(res.manager.email)])
         return response
