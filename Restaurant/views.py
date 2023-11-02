@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status ,generics,mixins,viewsets
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenVerifyView,TokenObtainPairView,TokenRefreshView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from .permissions import  IsAdminOrReadOnly
 from .serializer import *
 from .models import *
@@ -114,7 +116,7 @@ class FoodViewSet(ModelViewSet):
     
 '''class for Listing foods of a Restaurant or adding to Restaurant's foods by its Restaurant manager'''
 class ManagerFoodListCreateAPIView(generics.ListCreateAPIView):
-    authentication_classes = [TokenAuthentication,BaseAuthentication]
+    authentication_classes = [TokenAuthentication,BasicAuthentication,JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = FoodSerializer
     def get_queryset(self):
