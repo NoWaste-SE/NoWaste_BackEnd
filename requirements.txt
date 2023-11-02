@@ -35,7 +35,7 @@ MarkupSafe==2.1.2
 marshmallow==3.14.1
 marshmallow-jsonapi==0.24.0
 msgpack==1.0.5
-mysqlclient==2.2.0
+# mysqlclient==2.2.0
 numpy==1.24.3
 oic==1.5.0
 pandas==1.5.0
