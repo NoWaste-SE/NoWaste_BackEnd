@@ -21,5 +21,5 @@ urlpatterns = [
     path('all-countries/', ShowAllCountry.as_view(), name='all-countries'),
     path('cities-of-country/', CitiesOfCountry.as_view(), name='cities-of-country'),
     path('<int:user_id>/lat_long/',LatLongUpdateRetreive.as_view(),name='get_lat_long'),
-    path('csv-restaurants-info/', RestaurantInfoExportCSV.as_view(), name='csv-restaurants-info'),
+    path('excel/restaurants-info/', RestaurantInfoExportCSV.as_view(), name='csv-restaurants-info'),
 ]
