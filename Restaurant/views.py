@@ -550,3 +550,17 @@ class OrderHistoryManagerExportCSV(APIView):
                     writer.writerow([str(q.name), str(q.number), str(oi.food.name), str(oi.food.price), str(oi.quantity),  str(o.userId.name), str(o.userId.email), str(o.created_at).split()[0], str(o.status)])
         return response
 
+'''download order history for customer as excel'''
+class OrderHistoryCustomerExportCSV(APIView):
+    def get(self,request, *args, **kwargs):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="orders-history.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Restaurant Name', 'Restaurant Number','Food Name','Food Price','Quantity', 'Date', 'Status'])
+
+        queryset = Order.objects.filter(restaurant_id=self.kwargs['restaurant_id'] ,userId_id = self.kwargs['userId']).prefetch_related('orderItems').select_related('userId').select_related('restaurant')
+        for o in queryset:
+            for oi in o.orderItems.all():
+                writer.writerow([str(o.restaurant.name), str(o.restaurant.number), str(oi.food.name), str(oi.food.price), str(oi.quantity), str(o.created_at).split()[0], str(o.status)])
+        return response
+
