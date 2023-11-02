@@ -10,7 +10,6 @@ from .serializers import *
 from .models import *
 from .utils import Util
 from rest_framework.authtoken.models import Token
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.renderers import JSONRenderer
 from rest_framework import generics
 from django.template.loader import render_to_string
@@ -20,6 +19,8 @@ import random , string
 import json
 from cities_light.models import Country, City
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenVerifyView,TokenObtainPairView,TokenRefreshView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 '''Email Verification class for signing up'''
 class VerifyEmail(APIView):
@@ -114,7 +115,7 @@ class LoginView(TokenObtainPairView):
 
 '''Logout API view'''
 class LogoutView(APIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
@@ -205,7 +206,7 @@ class ForgotPassSetNewPass(APIView):
 '''Change Password API view '''
 class ChangePasswordView(generics.UpdateAPIView):
     queryset = MyAuthor.objects.all()
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ChangePasswordSerializer
     def put(self, request, *args, **kwargs):
@@ -217,7 +218,7 @@ class ChangePasswordView(generics.UpdateAPIView):
 
 '''Profile update and Retrive API view '''
 class UpdateRetrieveProfileView(generics.RetrieveUpdateAPIView):
-    authentication_classes = [TokenAuthentication]  
+    authentication_classes = [JWTAuthentication]  
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         return Customer.objects.filter(id=self.kwargs['id'])
@@ -245,7 +246,7 @@ class UpdateRetrieveProfileView(generics.RetrieveUpdateAPIView):
 
 '''Rate Restaurant API'''
 class RateRestaurantView(APIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = RateRestaurantSerializer(data=request.data)
@@ -266,7 +267,7 @@ class RateRestaurantView(APIView):
 
 '''Favorite Restaurant List API'''
 class AddRemoveFavorite(APIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = AddRemoveFavoriteSerializer(data=request.data)
@@ -299,7 +300,7 @@ class AddRemoveFavorite(APIView):
 
 '''Charg Wallet API'''  
 class ChargeWalletView(APIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = WalletSerializer(data=request.data)
@@ -319,7 +320,7 @@ class ChargeWalletView(APIView):
     
 '''Withdraw API'''
 class WithdrawFromWalletView(APIView):
-    authentication_classes = [TokenAuthentication] 
+    authentication_classes = [JWTAuthentication] 
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = WalletSerializer(data=request.data)
@@ -361,7 +362,7 @@ class CitiesOfCountry(APIView):
     
 '''Map API'''
 class LatLongUpdateRetreive(generics.RetrieveUpdateAPIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = LatLongSerializer
     lookup_field = 'myauthor_ptr_id'

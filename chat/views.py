@@ -12,7 +12,6 @@ from rest_framework import status
 from .serializers import ChatSerializer
 from .models import *
 from User.models import *
-from rest_framework.authentication import TokenAuthentication
 from django.http import JsonResponse
 from django.db.models import Q
 from itertools import chain
