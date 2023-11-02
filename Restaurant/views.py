@@ -207,13 +207,8 @@ class RestaurantManagerDetailView(generics.RetrieveUpdateDestroyAPIView):
         return context
 '''class for RestaurantManager API''' 
 class RestaurantManagerRestaurantListView(generics.ListCreateAPIView):
-<<<<<<< HEAD
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-=======
-    # authentication_classes = [TokenAuthentication]
+    # authentication_classes = [JWTAuthentication]
     # permission_classes = [IsAuthenticated]
->>>>>>> feat/excel-downloads
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
 
