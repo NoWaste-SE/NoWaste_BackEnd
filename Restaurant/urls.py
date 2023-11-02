@@ -38,6 +38,7 @@ urlpatterns = [
     path('nearest_restaurant',SearchNearestRestaurant.search_nearest_restaurant,name='search_nearest_restaurant'),
     path('getaddr',get_addr,name='get_addr'),
     path('<int:restaurant_id>/lat_long',LatLongUpdateRetreive.as_view(),name='get_update_lat_long'),
+    path('order/add_item/', OrderItemViewSet2.as_view({'post': 'create', 'get': 'list'}), name='order-add-item'),
 ]
 
 
