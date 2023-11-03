@@ -4,15 +4,16 @@ services:
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
-    # volumes:
-    #   - .:/usr/src/app/
-    # expose:
+
+    volumes:
+      - .:/usr/src/app/
+    # expose: -- test
     #   - 8000
     ports:
       - 8000:8000
   nginx:
     build: ./nginx
-    ports:
-      - 80:80
+    ports: --change from 80:80 to test nginx
+      - 1337:80
     depends_on:
       - web
