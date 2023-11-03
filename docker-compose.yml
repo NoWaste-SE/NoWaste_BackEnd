@@ -12,7 +12,7 @@ services:
       - 8000:8000
   nginx:
     build: ./nginx
-    ports:
+    ports: --change from 80:80
       - 1337:80
     depends_on:
       - web
