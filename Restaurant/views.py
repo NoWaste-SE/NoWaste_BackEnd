@@ -567,3 +567,6 @@ def get_lat_long(request, *args, **kwargs):
     rest = get_object_or_404(Restaurant,id =kwargs['restaurant_id'])
     content = JSONRenderer().render({'lat':rest.lat,'long':rest.lon})
     return HttpResponse(content, content_type='application/json')
+
+def test(request):
+    return HttpResponse("test")
