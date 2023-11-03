@@ -1,39 +1,29 @@
-
-from django.contrib.auth import get_user_model,logout
-from django.contrib.auth.hashers import make_password
-from rest_framework.permissions import BasePermission
+from django.contrib.auth import logout
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404,render, redirect
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.mixins import UpdateModelMixin
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status ,generics
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import action, permission_classes
-# from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import *
 from .models import *
 from .utils import Util
 from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import obtain_auth_token
-
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.renderers import JSONRenderer
-###############################################
-# from rest_framework_simplejwt.tokens import RefreshToken
-# from rest_framework_jwt.settings import api_settings
-
 from rest_framework import generics
 from django.template.loader import render_to_string
 from django.core.validators import EmailValidator
 from django.forms import ValidationError
 import random , string
+import csv
 import json
-# import jwt
 from cities_light.models import Country, City
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenVerifyView,TokenObtainPairView,TokenRefreshView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
+'''Email Verification class for signing up'''
 class VerifyEmail(APIView):
     def get_serializer_class(self, request):
         if request.data['role'] == "customer":
@@ -62,12 +52,13 @@ class VerifyEmail(APIView):
         serializer = BaseCreateUserSerializer()
         return Response(serializer.data)
     
+'''SignUp class'''   
 class SignUpView(APIView):
     serializer_class = SignUpSerializer
     permission_classes = (permissions.AllowAny,)
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid(raise_exception= True):
+        if serializer.is_valid(raise_exception= True) and not MyAuthor.objects.filter(email = request.data['email']).exists():
             vc_code = random.randint(100000, 999999)
             instance = serializer.save()
             instance.vc_code = vc_code
@@ -85,45 +76,47 @@ class SignUpView(APIView):
         serializer = SignUpSerializer()
         return Response(serializer.data)
     
-    
-class LoginView(APIView):
-    serializer_class = MyAuthorSerializer
-    permission_classes = (permissions.AllowAny,)
+'''Login API view'''   
+class LoginView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
-        email = request.data.get('email')
-        password = request.data.get('password')
-        try :
-            user = MyAuthor.objects.get(email = email)
+        response = super().post(request, *args, **kwargs)
+        access_token = response.data['access']
+        refresh_token = response.data['refresh']
+        if response.status_code == 200:
+            email = request.data.get('email')
+            password = request.data.get('password')
+            try :
+                user = MyAuthor.objects.get(email = email)
 
-        except Exception as error :
-            return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
-        if user is not None and user.check_password(password):
-            id = user.id
-            token, _ = Token.objects.get_or_create(user_id = id)
-            if user.role == "customer":
-                c = Customer.objects.get (email = email)
-                name = c.name
-                WalletBalance = c.wallet_balance
-                listOfFavorite = list(c.list_of_favorites_res.values_list('name', flat=True))
-                result_fav = []
-                for r in listOfFavorite:
-                    res = Restaurant.objects.get(name = r)
-                    result_fav.append({'address': res.address, 'name': res.name, 'restaurant_image': res.restaurant_image, 'discount': res.discount, 'number': res.number, 'rate': res.rate, 'date_of_establishment': res.date_of_establishment, 'description': res.description, 'id': res.id})
-                # listOfFavorite = list(c.list_of_favorites_res)
-                return Response({'token': token.key,'id' : user.id, 'wallet_balance':WalletBalance, 'role':user.role, 'list_of_favorites_res':result_fav, 'name':name})
+            except Exception as error :
+                return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+            if user is not None and user.check_password(password):
+                id = user.id
+                if user.role == "customer":
+                    c = Customer.objects.get (email = email)
+                    name = c.name
+                    WalletBalance = c.wallet_balance
+                    listOfFavorite = list(c.list_of_favorites_res.values_list('name', flat=True))
+                    result_fav = []
+                    for r in listOfFavorite:
+                        res = Restaurant.objects.get(name = r)
+                        result_fav.append({'address': res.address, 'name': res.name, 'restaurant_image': res.restaurant_image, 'discount': res.discount, 'number': res.number, 'rate': res.rate, 'date_of_establishment': res.date_of_establishment, 'description': res.description, 'id': res.id})
+                    # listOfFavorite = list(c.list_of_favorites_res)
+                    return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'wallet_balance':WalletBalance, 'role':user.role, 'list_of_favorites_res':result_fav, 'name':name})
+                else:
+                    r = RestaurantManager.objects.get(email = email)
+                    return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'role':user.role, 'name':r.name})
             else:
-                r = RestaurantManager.objects.get(email = email)
-                return Response({'token': token.key,'id' : user.id, 'role':user.role, 'name':r.name})
-
+                return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+            return response
     def get(self,request):
         serializer = MyAuthorSerializer()
         return Response(serializer.data)
 
-
+'''Logout API view'''
 class LogoutView(APIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
@@ -131,7 +124,7 @@ class LogoutView(APIView):
         logout(request)
         return Response({'message': 'User logged out successfully'})
 
-
+'''Forgot Password API view'''
 class ForgotPasswordViewSet(APIView):
     def post(self, request):
         serializer = ForgotPasswordSerializer()
@@ -151,9 +144,6 @@ class ForgotPasswordViewSet(APIView):
             u.vc_code = newCode
             u.save()
         except Exception as error:
-            # handle the exception
-            # print("An exception occurred:", error)
-            # return Response(error, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             return HttpResponse(json.dumps({'error': error}), mimetype="application/json")
         template = render_to_string('forgotpass_template.html',
             {'name': u.name,
@@ -165,6 +155,7 @@ class ForgotPasswordViewSet(APIView):
         serializer = ForgotPasswordSerializer()
         return Response(serializer.data)
 
+'''Email Verification for Forgot Password '''
 class ForgotPassVerify(APIView):
     def post(self, request):
         serializer = EmailVerificationSerializer(data=request.data)
@@ -190,6 +181,7 @@ class ForgotPassVerify(APIView):
         serializer = EmailVerificationSerializer()
         return Response(serializer.data)
 
+'''Forgot Password new pass generating'''
 class ForgotPassSetNewPass(APIView):
     def post(self, request):
         serializer = MyAuthorSerializer(data=request.data)
@@ -212,9 +204,10 @@ class ForgotPassSetNewPass(APIView):
         serializer = MyAuthorSerializer()
         return Response(serializer.data)
 
+'''Change Password API view '''
 class ChangePasswordView(generics.UpdateAPIView):
     queryset = MyAuthor.objects.all()
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ChangePasswordSerializer
     def put(self, request, *args, **kwargs):
@@ -224,9 +217,9 @@ class ChangePasswordView(generics.UpdateAPIView):
         super().update(request, *args, **kwargs) 
         return Response({"message" :"Password changed successfully!"},status= status.HTTP_200_OK)
 
-
+'''Profile update and Retrive API view '''
 class UpdateRetrieveProfileView(generics.RetrieveUpdateAPIView):
-    authentication_classes = [TokenAuthentication]  
+    authentication_classes = [JWTAuthentication]  
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         return Customer.objects.filter(id=self.kwargs['id'])
@@ -237,8 +230,6 @@ class UpdateRetrieveProfileView(generics.RetrieveUpdateAPIView):
             return UpdateUserSerializer
     lookup_field = 'id'
     def patch(self, request, *args, **kwargs):
-        # return self.partial_update(request, *args, **kwargs)
-        # self.update(request,*args,**kwargs)\
         instance = self.get_object()
         for key , value in request.data.items():
             print(key , value)
@@ -254,22 +245,9 @@ class UpdateRetrieveProfileView(generics.RetrieveUpdateAPIView):
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-class CustomerProfileView(generics.RetrieveAPIView):  
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-    serializer_class = CustomerSerializer
-    lookup_field = 'id'
-    def get_queryset(self):
-        return Customer.objects.filter(id=self.kwargs['id'])
-
-    def get_serializer_context(self):
-        return {'id': self.kwargs['id']}
-
-
-
+'''Rate Restaurant API'''
 class RateRestaurantView(APIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = RateRestaurantSerializer(data=request.data)
@@ -288,9 +266,9 @@ class RateRestaurantView(APIView):
         serializer = RateRestaurantSerializer()
         return Response(serializer.data)
 
-
+'''Favorite Restaurant List API'''
 class AddRemoveFavorite(APIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = AddRemoveFavoriteSerializer(data=request.data)
@@ -321,9 +299,9 @@ class AddRemoveFavorite(APIView):
         serializer = AddRemoveFavoriteSerializer()
         return Response(serializer.data)
 
-    
+'''Charg Wallet API'''
 class ChargeWalletView(APIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = WalletSerializer(data=request.data)
@@ -341,8 +319,9 @@ class ChargeWalletView(APIView):
         serializer = WalletSerializer()
         return Response(serializer.data)
     
+'''Withdraw API'''
 class WithdrawFromWalletView(APIView):
-    authentication_classes = [TokenAuthentication] 
+    authentication_classes = [JWTAuthentication] 
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = WalletSerializer(data=request.data)
@@ -363,13 +342,14 @@ class WithdrawFromWalletView(APIView):
         serializer = WalletSerializer()
         return Response(serializer.data)
 
-
+'''show countries'''
 class ShowAllCountry(APIView):
     def get(self, request):
         datas = Country.objects.all()
         serializer = CountrySerializer(datas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
+'''show cities of countries'''
 class CitiesOfCountry(APIView):
     def post(self, request):
         country_name = request.data['name']
@@ -380,8 +360,10 @@ class CitiesOfCountry(APIView):
     def get(self, request):
         serializer = CountrySerializer()
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+'''Map API'''
 class LatLongUpdateRetreive(generics.RetrieveUpdateAPIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = LatLongSerializer
     lookup_field = 'myauthor_ptr_id'
@@ -401,8 +383,23 @@ class LatLongUpdateRetreive(generics.RetrieveUpdateAPIView):
         serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)    
+        return Response(serializer.data)   
+
+'''get lat and long of user''' 
 def get_lat_long(user_id):
     cust = get_object_or_404(Customer,id = user_id)
     content = JSONRenderer().render({'lat':cust.lat,'long':cust.lon})
     return HttpResponse(content, content_type='application/json')
+
+'''download restaurants informations as excel in admin panel'''
+class RestaurantInfoExportCSV(APIView):
+    def get(self,request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="restaurants-info.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Name', 'Type', 'Address', 'Discount', 'Rate', 'Number', 'Manager Name', 'Manager Email'])
+
+        restaurants = Restaurant.objects.all()
+        for res in restaurants:
+            writer.writerow([str(res.name), str(res.type), str(res.address), str(res.discount), str(res.rate), str(res.number), str(res.manager.name), str(res.manager.email)])
+        return response

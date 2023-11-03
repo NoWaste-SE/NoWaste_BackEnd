@@ -5,11 +5,11 @@ from .models import *
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import MyAuthor
 from django.utils.html import format_html
+
 class UserAdmin(BaseUserAdmin):
     # Use the email field as the username field in the admin interface
     ordering = ['email']
     list_display = ['email', 'is_staff','Role']
-    # list_display_links = ('colored_role')
     def Role(self, obj):
         if obj.role == "customer":
             
@@ -34,13 +34,6 @@ class UserAdmin(BaseUserAdmin):
         # Hash the password before saving the user model
         obj.set_password(obj.password)
         super().save_model(request, obj, form, change)
-
-# admin.site.register(MyAuthor, UserAdmin)
-
-# class UserAdmin(BaseUserAdmin):
-#     pass
-# admin.site.register(MyAuthor, UserAdmin)
-# admin.site.register(MyAuthor)
 
 class RestaurantManagerAdmin(admin.ModelAdmin):
     ordering = ['name']
@@ -77,5 +70,3 @@ admin.site.register(VC_Codes,VC_CodesAdmin)
 admin.site.register(RestaurantManager,RestaurantManagerAdmin)
 admin.site.register(MyAuthor, UserAdmin)
 
-
-# admin.site.register(CountryCityDict)

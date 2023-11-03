@@ -1,9 +1,7 @@
-from decimal import Decimal
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth.models import AnonymousUser
 from rest_framework import serializers
 from .models import *
-# from Restaurant.serializer import RestaurantSerializer
+from cities_light.models import Country, City
 
 
 
@@ -26,9 +24,6 @@ class BaseCreateUserSerializer(serializers.ModelSerializer):
 
 
 class CreateCustomerSerializer(BaseCreateUserSerializer): 
-    # password = serializers.CharField(write_only=True, style={'input_type': 'password'},
-    #                             required=True, allow_blank=False, allow_null=False,
-    #                             validators=[validate_password])
     class Meta(BaseCreateUserSerializer.Meta): 
         model = Customer
         fields = BaseCreateUserSerializer.Meta.fields
@@ -40,7 +35,6 @@ class CreateRestaurantSerializer(BaseCreateUserSerializer):
         fields = BaseCreateUserSerializer.Meta.fields
     
 class SignUpSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = VC_Codes
         fields = ['name', 'email'] 
@@ -52,12 +46,10 @@ class MyAuthorSerializer(serializers.ModelSerializer):
         model = MyAuthor
         fields = ['password', 'email']
 
-
 class CreateUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, style={'input_type': 'password'},
                                         required=True, allow_blank=False, allow_null=False,
                                         validators=[validate_password])
-    # role = serializers.CharField()
     role = serializers.CharField(max_length=255, default="default")
     class Meta:
         model = Customer
@@ -93,7 +85,6 @@ class EmailVerificationSerializer(serializers.ModelSerializer):
         model = MyAuthor
         fields = ['email', 'code']
 
-
 class ChangePasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
@@ -115,16 +106,6 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"old_password": "Old password is not correct"})
         return value
 
-    # def validate_old_password(self, value):
-    #     user = self.context['request'].user
-
-    #     if isinstance(user, AnonymousUser):
-    #         return value
-
-    #     if not user.check_password(value):
-    #         raise serializers.ValidationError({"old_password": "Old password is not correct"})
-
-    #     return value
 
     def update(self, instance, validated_data):
         user = self.context['request'].user
@@ -204,11 +185,6 @@ class WalletSerializer(serializers.ModelSerializer):
         model = Customer
         fields = ['email', 'amount']
 
-
-# class CountryCityDictSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = CountryCityDict
-#         fields = '__all__'
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
