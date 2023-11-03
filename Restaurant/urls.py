@@ -38,8 +38,9 @@ urlpatterns = [
     path('nearest_restaurant',SearchNearestRestaurant.search_nearest_restaurant,name='search_nearest_restaurant'),
     path('getaddr',get_addr,name='get_addr'),
     path('<int:restaurant_id>/lat_long',LatLongUpdateRetreive.as_view(),name='get_update_lat_long'),
-    path('excel/manager/<int:manager_id>/order-history/',OrderHistoryManagerExportCSV.as_view(),name='csv-order-history-manager'),
-    path('excel/customer/<int:restaurant_id>/<int:userId>/order-history/',OrderHistoryCustomerExportCSV.as_view(),name='csv-order-history-customer'),
+    path('excel/manager/<int:manager_id>/order-history/',OrderHistoryManagerExportExcel.as_view(),name='csv-order-history-manager'),
+    path('excel/customer/<int:restaurant_id>/<int:userId>/order-history/',OrderHistoryCustomerExportExcel.as_view(),name='csv-order-history-customer'),
+    path('excel/customer/<int:userId>/order-history/',OrderHistoryDiffRestaurantCustomerExportExcel.as_view(),name='csv-order-history-customer'),
 ]
 
 

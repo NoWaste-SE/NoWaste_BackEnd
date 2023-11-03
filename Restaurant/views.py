@@ -17,6 +17,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.renderers import JSONRenderer
 from django.db.models import Q
 import requests
+import openpyxl
 import csv
 import json
 from django.http import JsonResponse
@@ -536,31 +537,85 @@ def get_lat_long(request, *args, **kwargs):
 
 
 '''download order history of all manager's restaurants as excel'''
-class OrderHistoryManagerExportCSV(APIView):
-    def get(self,request, *args, **kwargs):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="restaurants-orders.csv"'
-        writer = csv.writer(response)
-        writer.writerow(['Restaurant Name', 'Restaurant Number','Food Name','Food Price','Quantity',  'User Name', 'User Email', 'Date', 'Status'])
-
-        queryset = Restaurant.objects.filter(manager_id = self.kwargs['manager_id']).prefetch_related('Orders__orderItems')
+class OrderHistoryManagerExportExcel(APIView):
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="restaurants-orders.xlsx"'
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        headers = ['Restaurant Name', 'Restaurant Number', 'Food Name', 'Food Price', 'Quantity', 'User Name', 'User Email', 'Date', 'Status']
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.font = openpyxl.styles.Font(bold=True)
+            cell.fill = openpyxl.styles.PatternFill(start_color="FFC0CB", end_color="FFC0CB", fill_type="solid")  # Pink fill color
+        queryset = Restaurant.objects.filter(manager_id=self.kwargs['manager_id']).prefetch_related('Orders__orderItems')
+        row_num = 2
         for q in queryset:
             for o in q.Orders.all():
                 for oi in o.orderItems.all():
-                    writer.writerow([str(q.name), str(q.number), str(oi.food.name), str(oi.food.price), str(oi.quantity),  str(o.userId.name), str(o.userId.email), str(o.created_at).split()[0], str(o.status)])
+                    ws.cell(row=row_num, column=1, value=str(q.name))
+                    ws.cell(row=row_num, column=2, value=str(q.number))
+                    ws.cell(row=row_num, column=3, value=str(oi.food.name))
+                    ws.cell(row=row_num, column=4, value=str(oi.food.price))
+                    ws.cell(row=row_num, column=5, value=str(oi.quantity))
+                    ws.cell(row=row_num, column=6, value=str(o.userId.name))
+                    ws.cell(row=row_num, column=7, value=str(o.userId.email))
+                    ws.cell(row=row_num, column=8, value=str(o.created_at).split()[0])
+                    ws.cell(row=row_num, column=9, value=str(o.status))
+                    row_num += 1
+        wb.save(response)
         return response
 
 '''download order history for customer as excel'''
-class OrderHistoryCustomerExportCSV(APIView):
-    def get(self,request, *args, **kwargs):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="orders-history.csv"'
-        writer = csv.writer(response)
-        writer.writerow(['Restaurant Name', 'Restaurant Number','Food Name','Food Price','Quantity', 'Date', 'Status'])
-
-        queryset = Order.objects.filter(restaurant_id=self.kwargs['restaurant_id'] ,userId_id = self.kwargs['userId']).prefetch_related('orderItems').select_related('userId').select_related('restaurant')
+class OrderHistoryCustomerExportExcel(APIView):
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="orders-history.xlsx"'
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        headers = ['Restaurant Name', 'Restaurant Number', 'Food Name', 'Food Price', 'Quantity', 'Date', 'Status']
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.font = openpyxl.styles.Font(bold=True)
+            cell.fill = openpyxl.styles.PatternFill(start_color="FFC0CB", end_color="FFC0CB", fill_type="solid")  
+        queryset = Order.objects.filter(restaurant_id=self.kwargs['restaurant_id'], userId_id=self.kwargs['userId']).prefetch_related('orderItems').select_related('userId').select_related('restaurant')
+        row_num = 2
         for o in queryset:
             for oi in o.orderItems.all():
-                writer.writerow([str(o.restaurant.name), str(o.restaurant.number), str(oi.food.name), str(oi.food.price), str(oi.quantity), str(o.created_at).split()[0], str(o.status)])
+                ws.cell(row=row_num, column=1, value=str(o.restaurant.name))
+                ws.cell(row=row_num, column=2, value=str(o.restaurant.number))
+                ws.cell(row=row_num, column=3, value=str(oi.food.name))
+                ws.cell(row=row_num, column=4, value=str(oi.food.price))
+                ws.cell(row=row_num, column=5, value=str(oi.quantity))
+                ws.cell(row=row_num, column=6, value=str(o.created_at).split()[0])
+                ws.cell(row=row_num, column=7, value=str(o.status))
+                row_num += 1
+        wb.save(response)
         return response
-
+    
+'''download order history of diffrent restaurants for customer as excel'''
+class OrderHistoryDiffRestaurantCustomerExportExcel(APIView):
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="orders-history.xlsx"'
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        headers = ['Restaurant Name', 'Restaurant Number', 'Food Name', 'Food Price', 'Quantity', 'Date', 'Status']
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.font = openpyxl.styles.Font(bold=True)
+            cell.fill = openpyxl.styles.PatternFill(start_color="FFC0CB", end_color="FFC0CB", fill_type="solid")  
+        queryset = Order.objects.filter(userId_id=self.kwargs['userId']).prefetch_related('orderItems').select_related('userId').select_related('restaurant')
+        row_num = 2
+        for o in queryset:
+            for oi in o.orderItems.all():
+                ws.cell(row=row_num, column=1, value=str(o.restaurant.name))
+                ws.cell(row=row_num, column=2, value=str(o.restaurant.number))
+                ws.cell(row=row_num, column=3, value=str(oi.food.name))
+                ws.cell(row=row_num, column=4, value=str(oi.food.price))
+                ws.cell(row=row_num, column=5, value=str(oi.quantity))
+                ws.cell(row=row_num, column=6, value=str(o.created_at).split()[0])
+                ws.cell(row=row_num, column=7, value=str(o.status))
+                row_num += 1
+        wb.save(response)
+        return response
