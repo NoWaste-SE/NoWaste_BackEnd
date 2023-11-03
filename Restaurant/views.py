@@ -535,6 +535,9 @@ def get_lat_long(request, *args, **kwargs):
     return HttpResponse(content, content_type='application/json')
 
 
+def test(request):
+    return HttpResponse("test")
+
 '''download order history of all manager's restaurants as excel'''
 class OrderHistoryManagerExportCSV(APIView):
     def get(self,request, *args, **kwargs):
