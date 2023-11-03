@@ -6,12 +6,6 @@ from User.serializers import MyAuthorSerializer
 from .models import *
 
 class RestaurantSerializer(serializers.ModelSerializer):
-    # def Menu(self):
-    # def Menu(self,obj):
-    #     foods = Food.objects.filter(restaurant=obj)
-    #     serializer = FoodSerializer(foods, many=True)
-    #     return serializer.data
-    # menu = serializers.SerializerMethodField(method_name= 'Menu')  
 
     class Meta:
         model = Restaurant
@@ -19,7 +13,6 @@ class RestaurantSerializer(serializers.ModelSerializer):
         fields = ('number','name','address','rate','discount','date_of_establishment','description','restaurant_image','id', 'type','lat','lon','manager_id')
 
         extra_kwargs = {
-            # 'menu': {'read_only': True},
             'address': {'required': False},
             'name' : {'required': False},
         }
@@ -42,8 +35,6 @@ class RestaurantSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
-
-
 class ChangePasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
@@ -67,7 +58,6 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         user = self.context['request'].user
-        #  user = self.context['request'].user
 
         if not user.is_authenticated:
             raise serializers.ValidationError({"authorize": "You must be logged in to perform this action."})
@@ -79,7 +69,6 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
-
 
 class RestaurantSearchSerializer(serializers.ModelSerializer):
     class Meta:
@@ -97,7 +86,6 @@ class FoodSerializer(serializers.ModelSerializer):
     restaurant_id = serializers.IntegerField(read_only = False)
     class Meta :
         model = Food
-        # fields = '__all__'
         fields = ['name','price','ingredients','food_pic', 'food_pic2', 'restaurant_id','id', 'remainder']
 
 
@@ -136,14 +124,12 @@ class RestaurantManagerSerializer(serializers.ModelSerializer):
 class SimpleFoodSerializer(serializers.ModelSerializer):
     class Meta : 
         model = Food
-        # fields = ('name')
         fields = ['name','price']
 
 class OrderItemSerializer(serializers.ModelSerializer):
     def get_name_and_price(self,orderitem):
         return SimpleFoodSerializer(orderitem.food).data
     name_and_price = serializers.SerializerMethodField()
-    # new_wallet_balance = serializers.DecimalField(decimal_places=2, max_digits= 20, read_only=True)
     new_remainder = serializers.IntegerField(read_only=True)
     class Meta : 
         model = OrderItem
@@ -183,25 +169,17 @@ class GetOrderSerializer(serializers.ModelSerializer):
         return SimpleRestaurantSerializer(order.restaurant).data
     
     orderItems = OrderItemSerializer(many=True, read_only=True)
-    Subtotal_Grandtotal_discount = serializers.SerializerMethodField()
     userAddress = serializers.SerializerMethodField()
     restaurantDetails = serializers.SerializerMethodField()
     class Meta : 
         model = Order
-        fields = ('id','orderItems','restaurantDetails','userAddress','Subtotal_Grandtotal_discount','status')
+        fields = ('id','orderItems','restaurantDetails','userAddress','status')
 
         extra_kwargs = {
         'orderItems': {'read_only': True},
         'discount': {'read_only': True},
         'total_price': {'read_only': True}
         }
-
-# class CreateOrderSerializer(serializers.ModelSerializer):
-#     userId_id = serializers.IntegerField()
-#     restaurant_id = serializers.IntegerField()
-#     class Meta : 
-#         model = Order
-#         fields = ['userId_id','restaurant_id']
 
 class CustomerViewOrderSerializer(serializers.ModelSerializer):
     def get_orderDetails(self,order):
@@ -224,8 +202,10 @@ class SimpleUserSerializer(serializers.ModelSerializer):
 class RestaurantOrderViewSerializer(serializers.ModelSerializer):
     def get_orderDetails(self,order):
         return GetOrderSerializer(order).data
+    
     def get_userDetails(self,order):
         return SimpleUserSerializer(order.userId).data
+    
     orderDetails = serializers.SerializerMethodField()  # Embedding ParentSerializer in ChildSerializer
     userDetails = serializers.SerializerMethodField()
     status = serializers.CharField()
@@ -240,10 +220,7 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    # writer_username = serializers.CharField( required=False, validators=[])
-    # restaurant_name = serializers.CharField( required=False, validators=[])
-    # created_at = serializers.DateTimeField(required=False, read_only=True)
-    # created_at = serializers.DateTimeField( read_only=True)
+
     def get_created_at_date(self, comment :Comment):
         return str(comment.created_at)[:10]
     writer_username = serializers.CharField(source='writer.username', read_only=True)
@@ -251,10 +228,6 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta : 
         model = Comment
         fields = ['text', 'writer_username', 'created_at_date']
-    # def create(self, validated_data):
-        # writer_username = validated_data.pop('writer_username',None)
-        # restaurant_name = validated_data.pop('restaurant_name',None)
-        # return super().create(validated_data)
 
 class LatLongSerializer(serializers.ModelSerializer):
 
