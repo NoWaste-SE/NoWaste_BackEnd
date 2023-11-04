@@ -41,6 +41,8 @@ urlpatterns = [
     path('test', test, name='test'),
     path('excel/manager/<int:manager_id>/order-history/',OrderHistoryManagerExportCSV.as_view(),name='csv-order-history-manager'),
     path('excel/customer/<int:restaurant_id>/<int:userId>/order-history/',OrderHistoryCustomerExportCSV.as_view(),name='csv-order-history-customer'),
+
+    path('order/add_item/', OrderItemViewSet2.as_view({'post': 'create', 'get': 'list'}), name='order-add-item'),
 ]
 
 

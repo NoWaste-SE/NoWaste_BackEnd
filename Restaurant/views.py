@@ -6,12 +6,11 @@ from rest_framework.response import Response
 from rest_framework import status ,generics,mixins,viewsets
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.views import TokenVerifyView,TokenObtainPairView,TokenRefreshView
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from .permissions import  IsAdminOrReadOnly
 from .serializer import *
 from .models import *
 from .filters import RestaurantFilter , FoodFilter
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.renderers import JSONRenderer
@@ -26,7 +25,7 @@ from django.core import serializers
 
 '''class for Change Password API'''
 class ChangePasswordView(generics.UpdateAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ChangePasswordSerializer
     def put(self, request, *args, **kwargs):
@@ -38,7 +37,7 @@ class ChangePasswordView(generics.UpdateAPIView):
 
 '''class for accessing to List of restaurants or a specific restaurant and also update it .'''
 class RestaurantProfileViewSet(viewsets.ViewSet):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
     serializer_class = RestaurantSerializer
@@ -118,6 +117,7 @@ class FoodViewSet(ModelViewSet):
 class ManagerFoodListCreateAPIView(generics.ListCreateAPIView):
     # authentication_classes = [JWTAuthentication]
     # permission_classes = [IsAuthenticated]
+
     serializer_class = FoodSerializer
     def get_queryset(self):
         print(self.kwargs)
@@ -139,7 +139,7 @@ class ManagerFoodListCreateAPIView(generics.ListCreateAPIView):
 
 '''class for Restrive,Update,Destroy food of a Restaurant by its manager'''
 class ManagerFoodViewSet(generics.RetrieveUpdateDestroyAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = FoodSerializer
     lookup_field = 'pk'
@@ -188,7 +188,7 @@ class FilterFoodViewSet(ModelViewSet):
 
 '''class for creating a Restaurant manager or get the list of managers'''
 class RestaurantManagerListCreateView(generics.ListCreateAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = RestaurantManager.objects.all()
     serializer_class = RestaurantManagerSerializer
@@ -196,7 +196,7 @@ class RestaurantManagerListCreateView(generics.ListCreateAPIView):
 
 '''class for Retrieve,Update,Destroy a Restaurant manager'''
 class RestaurantManagerDetailView(generics.RetrieveUpdateDestroyAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = RestaurantManager.objects.all()
     serializer_class = RestaurantManagerSerializer
@@ -209,6 +209,7 @@ class RestaurantManagerDetailView(generics.RetrieveUpdateDestroyAPIView):
 class RestaurantManagerRestaurantListView(generics.ListCreateAPIView):
     # authentication_classes = [JWTAuthentication]
     # permission_classes = [IsAuthenticated]
+
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
 
@@ -240,7 +241,7 @@ class RestaurantManagerRestaurantListView(generics.ListCreateAPIView):
 
 '''class for Resturant manager Profile page'''        
 class RestaurantManagerRestaurantDetailView(generics.RetrieveUpdateDestroyAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer # for show the manager's restaurants'information
@@ -252,7 +253,7 @@ class RestaurantManagerRestaurantDetailView(generics.RetrieveUpdateDestroyAPIVie
 
 '''APIView for Orders'''
 class OrderAPIView(generics.RetrieveUpdateAPIView,generics.CreateAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = GetOrderSerializer
     lookup_field = 'pk'
@@ -377,7 +378,7 @@ def remove_from_Order(request, *args, **kwargs):
 
 '''class for Listing Customers' orders'''
 class CustomerOrderViewAPI(generics.ListAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     def get_serializer_class(self):
         return CustomerViewOrderSerializer
@@ -387,7 +388,7 @@ class CustomerOrderViewAPI(generics.ListAPIView):
 
 '''class for Listing Orders of a restaurant'''       
 class RestaurantOrderViewAPI(generics.ListAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = RestaurantOrderViewSerializer
     def get_queryset(self):
@@ -402,7 +403,7 @@ class RestaurantOrderViewAPI(generics.ListAPIView):
 
 '''class for Updating the Order Status'''
 class UpdateOrderStatusAPI(generics.UpdateAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
     lookup_url_kwarg = 'order_id'
@@ -424,7 +425,7 @@ class UpdateOrderStatusAPI(generics.UpdateAPIView):
 
 '''class for post and get a comment'''
 class CommentAPI(APIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -450,7 +451,7 @@ class CommentAPI(APIView):
 
 '''class for returning a list of comments according to a specific restaurant'''
 class RestaurantCommentListAPIView(generics.ListAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = CommentSerializer
     queryset = Comment.objects.all()
@@ -506,7 +507,7 @@ def get_addr(request):
 
 '''updating the Latitude and logitude of the user's location'''
 class LatLongUpdateRetreive(generics.RetrieveUpdateAPIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = LatLongSerializer
     lookup_field = 'pk'
@@ -535,6 +536,15 @@ def get_lat_long(request, *args, **kwargs):
     return HttpResponse(content, content_type='application/json')
 
 
+class OrderViewSet2(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer2
+
+class OrderItemViewSet2(viewsets.ModelViewSet):
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemSerializer2
+
+    
 def test(request):
     return HttpResponse("test")
 
