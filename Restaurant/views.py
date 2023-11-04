@@ -567,3 +567,10 @@ class OrderHistoryCustomerExportCSV(APIView):
                 writer.writerow([str(o.restaurant.name), str(o.restaurant.number), str(oi.food.name), str(oi.food.price), str(oi.quantity), str(o.created_at).split()[0], str(o.status)])
         return response
 
+class OrderViewSet2(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer2
+
+class OrderItemViewSet2(viewsets.ModelViewSet):
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemSerializer2
