@@ -16,6 +16,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.renderers import JSONRenderer
 from django.db.models import Q
 import requests
+import csv
 import json
 from django.http import JsonResponse
 import urllib
@@ -114,8 +115,9 @@ class FoodViewSet(ModelViewSet):
     
 '''class for Listing foods of a Restaurant or adding to Restaurant's foods by its Restaurant manager'''
 class ManagerFoodListCreateAPIView(generics.ListCreateAPIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
+
     serializer_class = FoodSerializer
     def get_queryset(self):
         print(self.kwargs)
@@ -205,8 +207,9 @@ class RestaurantManagerDetailView(generics.RetrieveUpdateDestroyAPIView):
         return context
 '''class for RestaurantManager API''' 
 class RestaurantManagerRestaurantListView(generics.ListCreateAPIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
+
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
 
@@ -532,6 +535,7 @@ def get_lat_long(request, *args, **kwargs):
     content = JSONRenderer().render({'lat':rest.lat,'long':rest.lon})
     return HttpResponse(content, content_type='application/json')
 
+
 class OrderViewSet2(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer2
@@ -539,3 +543,37 @@ class OrderViewSet2(viewsets.ModelViewSet):
 class OrderItemViewSet2(viewsets.ModelViewSet):
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer2
+
+    
+def test(request):
+    return HttpResponse("test")
+
+'''download order history of all manager's restaurants as excel'''
+class OrderHistoryManagerExportCSV(APIView):
+    def get(self,request, *args, **kwargs):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="restaurants-orders.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Restaurant Name', 'Restaurant Number','Food Name','Food Price','Quantity',  'User Name', 'User Email', 'Date', 'Status'])
+
+        queryset = Restaurant.objects.filter(manager_id = self.kwargs['manager_id']).prefetch_related('Orders__orderItems')
+        for q in queryset:
+            for o in q.Orders.all():
+                for oi in o.orderItems.all():
+                    writer.writerow([str(q.name), str(q.number), str(oi.food.name), str(oi.food.price), str(oi.quantity),  str(o.userId.name), str(o.userId.email), str(o.created_at).split()[0], str(o.status)])
+        return response
+
+'''download order history for customer as excel'''
+class OrderHistoryCustomerExportCSV(APIView):
+    def get(self,request, *args, **kwargs):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="orders-history.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Restaurant Name', 'Restaurant Number','Food Name','Food Price','Quantity', 'Date', 'Status'])
+
+        queryset = Order.objects.filter(restaurant_id=self.kwargs['restaurant_id'] ,userId_id = self.kwargs['userId']).prefetch_related('orderItems').select_related('userId').select_related('restaurant')
+        for o in queryset:
+            for oi in o.orderItems.all():
+                writer.writerow([str(o.restaurant.name), str(o.restaurant.number), str(oi.food.name), str(oi.food.price), str(oi.quantity), str(o.created_at).split()[0], str(o.status)])
+        return response
+
