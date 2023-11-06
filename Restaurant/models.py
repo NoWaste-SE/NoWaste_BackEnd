@@ -57,91 +57,91 @@ class Comment(models.Model):
     def __str__(self) -> str:
         return str(self.writer.name) + " "+  str(self.restaurant.name)
 
-class OrderManager(models.Manager):
-    @classmethod
-    def get_initiated_order(cls, customer, restaurant):
-        order, created = cls.get_or_create(
-            customer=customer,
-            restaurant=restaurant,
-            status='initiated'
-        )
-        return order
+# class OrderManager(models.Manager):
+#     @classmethod
+#     def get_initiated_order(cls, customer, restaurant):
+#         order, created = cls.get_or_create(
+#             customer=customer,
+#             restaurant=restaurant,
+#             status='initiated'
+#         )
+#         return order
 
-class Order2(models.Model):
-    objects = OrderManager
+# class Order2(models.Model):
+#     objects = OrderManager
     
-    ORDER_STATUS_CHOICES = (
-        ('initiated', 'Initiated'),
-        ('pending', 'Pending'),
-        ('accepted', 'Accepted'),
-        ('rejected', 'Rejected'),
-        ('delivered', 'Delivered'),
-    )
+#     ORDER_STATUS_CHOICES = (
+#         ('initiated', 'Initiated'),
+#         ('pending', 'Pending'),
+#         ('accepted', 'Accepted'),
+#         ('rejected', 'Rejected'),
+#         ('delivered', 'Delivered'),
+#     )
 
-    status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='pending')
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='orders')
-    order_date = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=20, default='pending')
+#     status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='pending')
+#     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
+#     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='orders')
+#     order_date = models.DateTimeField(auto_now_add=True)
+#     name = models.CharField(max_length=20, default='pending')
 
-    def __str__(self):
-        return f"Order #{self.id} by {self.customer_name} on {self.order_date}"
+#     def __str__(self):
+#         return f"Order #{self.id} by {self.customer_name} on {self.order_date}"
 
-    @property
-    def total_price(self):
-        return sum(item.total_price for item in self.items.all())
+#     @property
+#     def total_price(self):
+#         return sum(item.total_price for item in self.items.all())
 
-    def clean(self):
-        # Check if there is an existing order for this restaurant with status 'initiated' for this customer
-        existing_orders = Order.objects.filter(
-            customer=self.customer,
-            restaurant=self.restaurant,
-            status='initiated'
-        )
+#     def clean(self):
+#         # Check if there is an existing order for this restaurant with status 'initiated' for this customer
+#         existing_orders = Order.objects.filter(
+#             customer=self.customer,
+#             restaurant=self.restaurant,
+#             status='initiated'
+#         )
 
-        if existing_orders.exists():
-            raise ValidationError("You already have an existing order for this restaurant with status 'initiated'")
+#         if existing_orders.exists():
+#             raise ValidationError("You already have an existing order for this restaurant with status 'initiated'")
 
-    # Other fields and methods...
+#     # Other fields and methods...
 
-class OrderItemManager(models.Manager):
-    def get_by_order_and_item(self, order, item):
-        return self.get(order=order, item=item)
+# class OrderItemManager(models.Manager):
+#     def get_by_order_and_item(self, order, item):
+#         return self.get(order=order, item=item)
 
-    @classmethod
-    def add_to_order(cls, item, quantity):
-        order = Order.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
-        order_item, created = cls.get_or_create(order=order, item=item)
-        if not created:
-            order_item.quantity += quantity
-            order_item.save()
-        return order_item
+#     @classmethod
+#     def add_to_order(cls, item, quantity):
+#         order = Order.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
+#         order_item, created = cls.get_or_create(order=order, item=item)
+#         if not created:
+#             order_item.quantity += quantity
+#             order_item.save()
+#         return order_item
 
-    def remove_from_order(self, item, quantity):
-        order = Order.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
-        order_item = self.get_by_order_and_item(order=order, item=item)
-        if order_item.quantity > quantity:
-            order_item.quantity -= quantity
-            order_item.save()
-        else:
-            order_item.delete()
-        return order_item
+#     def remove_from_order(self, item, quantity):
+#         order = Order.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
+#         order_item = self.get_by_order_and_item(order=order, item=item)
+#         if order_item.quantity > quantity:
+#             order_item.quantity -= quantity
+#             order_item.save()
+#         else:
+#             order_item.delete()
+#         return order_item
     
-    def same_restaurant(self):
-        return True
+#     def same_restaurant(self):
+#         return True
 
-class OrderItem2(models.Model):
-    objects = OrderItemManager
+# class OrderItem2(models.Model):
+#     objects = OrderItemManager
 
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    item = models.ForeignKey(Food, on_delete=models.CASCADE, validators=[objects.same_restaurant])
-    quantity = models.PositiveIntegerField(default=1)
+#     order = models.ForeignKey(Order, on_delete=models.CASCADE)
+#     item = models.ForeignKey(Food, on_delete=models.CASCADE, validators=[objects.same_restaurant])
+#     quantity = models.PositiveIntegerField(default=1)
 
-    def __str__(self):
-        return f"{self.quantity}x {self.item_name} in Order #{self.order.id}"
+#     def __str__(self):
+#         return f"{self.quantity}x {self.item_name} in Order #{self.order.id}"
 
-    @property
-    def total_price(self):
-        return self.quantity * self.item.price
+#     @property
+#     def total_price(self):
+#         return self.quantity * self.item.price
 
-    # Other fields and methods...
+#     # Other fields and methods...
