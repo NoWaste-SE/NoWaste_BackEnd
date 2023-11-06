@@ -15,6 +15,7 @@ from rest_framework import generics
 from django.template.loader import render_to_string
 from django.core.validators import EmailValidator
 from django.forms import ValidationError
+import openpyxl
 import random , string
 import csv
 import json
@@ -392,14 +393,27 @@ def get_lat_long(user_id):
     return HttpResponse(content, content_type='application/json')
 
 '''download restaurants informations as excel in admin panel'''
-class RestaurantInfoExportCSV(APIView):
-    def get(self,request):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="restaurants-info.csv"'
-        writer = csv.writer(response)
-        writer.writerow(['Name', 'Type', 'Address', 'Discount', 'Rate', 'Number', 'Manager Name', 'Manager Email'])
+class RestaurantInfoExportExcel(APIView):
+    def get(self, request):
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="restaurants-info.xlsx"'
+        wb = openpyxl.Workbook()
+        ws = wb.active
 
+        headers = ['Name', 'Type', 'Address', 'Discount', 'Rate', 'Number', 'Manager Name', 'Manager Email']
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.font = openpyxl.styles.Font(bold=True)
+            cell.fill = openpyxl.styles.PatternFill(start_color="FFC0CB", end_color="FFC0CB", fill_type="solid") 
         restaurants = Restaurant.objects.all()
-        for res in restaurants:
-            writer.writerow([str(res.name), str(res.type), str(res.address), str(res.discount), str(res.rate), str(res.number), str(res.manager.name), str(res.manager.email)])
+        for row_num, res in enumerate(restaurants, 2):
+            ws.cell(row=row_num, column=1, value=res.name)
+            ws.cell(row=row_num, column=2, value=res.type)
+            ws.cell(row=row_num, column=3, value=res.address)
+            ws.cell(row=row_num, column=4, value=res.discount)
+            ws.cell(row=row_num, column=5, value=res.rate)
+            ws.cell(row=row_num, column=6, value=res.number)
+            ws.cell(row=row_num, column=7, value=res.manager.name)
+            ws.cell(row=row_num, column=8, value=res.manager.email)
+        wb.save(response)
         return response
