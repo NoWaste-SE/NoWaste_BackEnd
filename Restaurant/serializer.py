@@ -236,24 +236,24 @@ class LatLongSerializer(serializers.ModelSerializer):
         fields = ['lat','lon']
         
         
-class OrderItemSerializer2(serializers.ModelSerializer):
-    class Meta:
-        model = OrderItem2
-        fields = ['quantity', 'item']
-        read_only_fields = ['order']
+# class OrderItemSerializer2(serializers.ModelSerializer):
+#     class Meta:
+#         model = OrderItem2
+#         fields = ['quantity', 'item']
+#         read_only_fields = ['order']
         
-    def create(self, validated_data):
-        item = validated_data.get('item')
-        quantity = validated_data.get('quantity')
-        customer = self.context['request'].user
-        restaurant = Food.objects.filter(id=item.id).first().restaurant
-        order = Order2.objects.get_initiated_order(customer, restaurant)
-        order_item = OrderItem2.objects.add_to_order(order, item, quantity)
-        return order_item
+#     def create(self, validated_data):
+#         item = validated_data.get('item')
+#         quantity = validated_data.get('quantity')
+#         customer = self.context['request'].user
+#         restaurant = Food.objects.filter(id=item.id).first().restaurant
+#         order = Order2.objects.get_initiated_order(customer, restaurant)
+#         order_item = OrderItem2.objects.add_to_order(order, item, quantity)
+#         return order_item
 
-class OrderSerializer2(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True, read_only=True)
+# class OrderSerializer2(serializers.ModelSerializer):
+#     items = OrderItemSerializer(many=True, read_only=True)
 
-    class Meta:
-        model = Order2
-        fields = '__all__'
+#     class Meta:
+#         model = Order2
+#         fields = '__all__'
