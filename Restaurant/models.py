@@ -82,6 +82,7 @@ class Order2(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='orders')
     order_date = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=20, default='pending')
 
     def __str__(self):
         return f"Order #{self.id} by {self.customer_name} on {self.order_date}"
