@@ -117,8 +117,8 @@ class FoodViewSet(ModelViewSet):
     
 '''class for Listing foods of a Restaurant or adding to Restaurant's foods by its Restaurant manager'''
 class ManagerFoodListCreateAPIView(generics.ListCreateAPIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = FoodSerializer
     def get_queryset(self):
         print(self.kwargs)
@@ -208,8 +208,8 @@ class RestaurantManagerDetailView(generics.RetrieveUpdateDestroyAPIView):
         return context
 '''class for RestaurantManager API''' 
 class RestaurantManagerRestaurantListView(generics.ListCreateAPIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
 
@@ -378,8 +378,8 @@ def remove_from_Order(request, *args, **kwargs):
 
 '''class for Listing Customers' orders'''
 class CustomerOrderViewAPI(generics.ListAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
     def get_serializer_class(self):
         return CustomerViewOrderSerializer
 
@@ -388,8 +388,8 @@ class CustomerOrderViewAPI(generics.ListAPIView):
 
 '''class for Listing Orders of a restaurant'''       
 class RestaurantOrderViewAPI(generics.ListAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
     serializer_class = RestaurantOrderViewSerializer
     def get_queryset(self):
         # Listing Orders of a restaurant(the resturanst are unified by their manager id)

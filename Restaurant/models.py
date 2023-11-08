@@ -145,6 +145,3 @@ class OrderItem2(models.Model):
         return self.quantity * self.item.price
 
     # Other fields and methods...
-
-class new_table(models.Model):
-    name = models.CharField(max_length=255)
