@@ -57,20 +57,8 @@ class Comment(models.Model):
     def __str__(self) -> str:
         return str(self.writer.name) + " "+  str(self.restaurant.name)
 
-class OrderManager(models.Manager):
-    def get_initiated_order(self, customer, restaurant):
-        order, created = self.get_or_create(
-            customer=customer,
-            restaurant=restaurant,
-            status='initiated'
-        )
-        print(f'ATTENTIONNNNN {order}')
-        return order
 
-
-class Order2(models.Model):
-    objects = OrderManager()
-    
+class Order2(models.Model):    
     ORDER_STATUS_CHOICES = (
         ('initiated', 'Initiated'),
         ('pending', 'Pending'),
