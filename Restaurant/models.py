@@ -57,8 +57,19 @@ class Comment(models.Model):
     def __str__(self) -> str:
         return str(self.writer.name) + " "+  str(self.restaurant.name)
 
+class OrderManager(models.Manager):
+    def get_initiated_order(self, customer, restaurant):
+        order, created = self.model.get_or_create(
+            customer=customer,
+            restaurant=restaurant,
+            status='initiated'
+        )
+        return order
 
-class Order2(models.Model):    
+
+class Order2(models.Model):
+    objects = OrderManager()
+    
     ORDER_STATUS_CHOICES = (
         ('initiated', 'Initiated'),
         ('pending', 'Pending'),
@@ -79,15 +90,6 @@ class Order2(models.Model):
     @property
     def total_price(self):
         return sum(item.total_price for item in self.items.all())
-    
-    @classmethod
-    def get_initiated_order(cls, customer, restaurant):
-        order, created = cls.objects.get_or_create(
-            customer=customer,
-            restaurant=restaurant,
-            status='initiated'
-        )
-        return order
     
     def update_items(self, item, quantity):
         order_item, created = OrderItem2.objects.get_or_create(
