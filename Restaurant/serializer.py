@@ -242,10 +242,11 @@ class OrderItemSerializer2(serializers.ModelSerializer):
         fields = ['quantity', 'item']
         read_only_fields = ['order']
         
-    def create(self, validated_data):
+def create(self, validated_data):
         item = validated_data.get('item')
         quantity = validated_data.get('quantity')
-        customer = self.context['request'].user
+        user = self.context['request'].user
+        customer = Customer.objects.get(user=user)
         restaurant = Food.objects.filter(id=item.id).first().restaurant
         order = Order2.objects.get_initiated_order(customer, restaurant)
         order_item = OrderItem2.objects.add_to_order(order, item, quantity)

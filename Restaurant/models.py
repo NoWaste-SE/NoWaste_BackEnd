@@ -64,10 +64,11 @@ class OrderManager(models.Manager):
             restaurant=restaurant,
             status='initiated'
         )
+        print(f'ATTENTIONNNNN {order}')
         return order
 
 class Order2(models.Model):
-    objects = OrderManager
+    objects = OrderManager()
     
     ORDER_STATUS_CHOICES = (
         ('initiated', 'Initiated'),
@@ -107,10 +108,10 @@ class OrderItemManager(models.Manager):
     def get_by_order_and_item(self, order, item):
         return self.get(order=order, item=item)
 
-    @classmethod
-    def add_to_order(cls, item, quantity):
+    def add_to_order(self, item, quantity):
         order = Order2.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
-        order_item, created = cls.get_or_create(order=order, item=item)
+        print(f'ATTENTIONNNNN {order}')
+        order_item, created = self.get_or_create(order=order, item=item)
         if not created:
             order_item.quantity += quantity
             order_item.save()
@@ -126,11 +127,11 @@ class OrderItemManager(models.Manager):
             order_item.delete()
         return order_item
     
-    def same_restaurant(self):
+    def same_restaurant(self, value):
         return True
 
 class OrderItem2(models.Model):
-    objects = OrderItemManager
+    objects = OrderItemManager()
 
     order = models.ForeignKey(Order2, on_delete=models.CASCADE)
     item = models.ForeignKey(Food, on_delete=models.CASCADE, validators=[objects.same_restaurant])
