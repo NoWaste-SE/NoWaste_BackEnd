@@ -92,6 +92,15 @@ class Order2(models.Model):
     def total_price(self):
         return sum(item.total_price for item in self.items.all())
     
+    @classmethod
+    def get_initiated_order(cls, customer, restaurant):
+        order, created = cls.objects.get_or_create(
+            customer=customer,
+            restaurant=restaurant,
+            status='initiated'
+        )
+        return order
+    
     def update_items(self, item, quantity):
         order_item, created = OrderItem2.objects.get_or_create(
             order=self,
