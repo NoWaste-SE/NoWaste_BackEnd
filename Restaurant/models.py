@@ -93,7 +93,7 @@ class Order2(models.Model):
 
     def clean(self):
         # Check if there is an existing order for this restaurant with status 'initiated' for this customer
-        existing_orders = Order.objects.filter(
+        existing_orders = Order2.objects.filter(
             customer=self.customer,
             restaurant=self.restaurant,
             status='initiated'
@@ -110,7 +110,7 @@ class OrderItemManager(models.Manager):
 
     @classmethod
     def add_to_order(cls, item, quantity):
-        order = Order.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
+        order = Order2.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
         order_item, created = cls.get_or_create(order=order, item=item)
         if not created:
             order_item.quantity += quantity
@@ -118,7 +118,7 @@ class OrderItemManager(models.Manager):
         return order_item
 
     def remove_from_order(self, item, quantity):
-        order = Order.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
+        order = Order2.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
         order_item = self.get_by_order_and_item(order=order, item=item)
         if order_item.quantity > quantity:
             order_item.quantity -= quantity
@@ -133,7 +133,7 @@ class OrderItemManager(models.Manager):
 class OrderItem2(models.Model):
     objects = OrderItemManager
 
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order2, on_delete=models.CASCADE)
     item = models.ForeignKey(Food, on_delete=models.CASCADE, validators=[objects.same_restaurant])
     quantity = models.PositiveIntegerField(default=1)
 

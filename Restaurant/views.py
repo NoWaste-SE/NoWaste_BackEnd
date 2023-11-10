@@ -624,10 +624,10 @@ class OrderHistoryDiffRestaurantCustomerExportExcel(APIView):
         return response
 
 class OrderViewSet2(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
+    queryset = Order2.objects.all()
     serializer_class = OrderSerializer2
 
 class OrderItemViewSet2(viewsets.ModelViewSet):
-    queryset = OrderItem.objects.all()
+    queryset = OrderItem2.objects.all()
     serializer_class = OrderItemSerializer2
     
