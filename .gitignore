@@ -133,4 +133,4 @@ dmypy.json
 
 
 # migrations
-**/migrations/*
+migrations/*
