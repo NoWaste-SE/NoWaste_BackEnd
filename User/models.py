@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from .managers import AuthorManager,RestaurantManager
 from datetime import *
+from Restaurant.models import Order2
 
 
 # set default image for restaurant profile
@@ -85,6 +86,11 @@ class Customer(MyAuthor):
     def save(self, *args, **kwargs):
         self.username = self.name
         super().save(*args, **kwargs)
+        
+    def get_initiated_order(self, restaurant):
+        order, created = Order2.objects.get_or_create(customer=self, restaurant=restaurant, status='initiated')
+        return order
+        
     def __str__(self) -> str:
         return self.username
     

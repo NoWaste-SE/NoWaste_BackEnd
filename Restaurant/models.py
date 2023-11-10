@@ -67,6 +67,7 @@ class OrderManager(models.Manager):
         print(f'ATTENTIONNNNN {order}')
         return order
 
+
 class Order2(models.Model):
     objects = OrderManager()
     
@@ -90,7 +91,20 @@ class Order2(models.Model):
     @property
     def total_price(self):
         return sum(item.total_price for item in self.items.all())
+    
+    def update_items(self, item, quantity):
+        order_item, created = OrderItem2.objects.get_or_create(
+            order=self,
+            item=item,
+            defaults={'quantity': quantity}
+        )
 
+        if not created:
+            if quantity == 0:
+                order_item.delete()
+            order_item.quantity = quantity
+            order_item.save()
+            
     def clean(self):
         # Check if there is an existing order for this restaurant with status 'initiated' for this customer
         existing_orders = Order2.objects.filter(
@@ -104,37 +118,10 @@ class Order2(models.Model):
 
     # Other fields and methods...
 
-class OrderItemManager(models.Manager):
-    def get_by_order_and_item(self, order, item):
-        return self.get(order=order, item=item)
-
-    def add_to_order(self, item, quantity):
-        order = Order2.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
-        print(f'ATTENTIONNNNN {order}')
-        order_item, created = self.get_or_create(order=order, item=item)
-        if not created:
-            order_item.quantity += quantity
-            order_item.save()
-        return order_item
-
-    def remove_from_order(self, item, quantity):
-        order = Order2.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
-        order_item = self.get_by_order_and_item(order=order, item=item)
-        if order_item.quantity > quantity:
-            order_item.quantity -= quantity
-            order_item.save()
-        else:
-            order_item.delete()
-        return order_item
     
-    def same_restaurant(self, value):
-        return True
-
-class OrderItem2(models.Model):
-    objects = OrderItemManager()
-
+class OrderItem2(models.Model):    
     order = models.ForeignKey(Order2, on_delete=models.CASCADE)
-    item = models.ForeignKey(Food, on_delete=models.CASCADE, validators=[objects.same_restaurant])
+    item = models.ForeignKey(Food, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
