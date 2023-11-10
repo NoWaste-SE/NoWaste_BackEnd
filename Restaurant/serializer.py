@@ -246,7 +246,7 @@ class OrderItemSerializer2(serializers.ModelSerializer):
         item = validated_data.get('item')
         quantity = validated_data.get('quantity')
         user = self.context['request'].user
-        customer = Customer.objects.get(id=user.id)
+        customer = Customer.objects.get(myauthor_ptr_id=user.id)
         restaurant = Food.objects.filter(id=item.id).first().restaurant
         order = Order2.objects.get_initiated_order(restaurant, customer).update_items(item, quantity)
         return order
