@@ -58,9 +58,8 @@ class Comment(models.Model):
         return str(self.writer.name) + " "+  str(self.restaurant.name)
 
 class OrderManager(models.Manager):
-    @classmethod
-    def get_initiated_order(cls, customer, restaurant):
-        order, created = cls.get_or_create(
+    def get_initiated_order(self, customer, restaurant):
+        order, created = self.get_or_create(
             customer=customer,
             restaurant=restaurant,
             status='initiated'
