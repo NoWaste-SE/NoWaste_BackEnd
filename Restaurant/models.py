@@ -59,7 +59,7 @@ class Comment(models.Model):
 
 class OrderManager(models.Manager):
     def get_initiated_order(self, customer, restaurant):
-        order, created = self.model.get_or_create(
+        order, created = self.get_or_create(
             customer=customer,
             restaurant=restaurant,
             status='initiated'
