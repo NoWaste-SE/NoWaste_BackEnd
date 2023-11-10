@@ -103,6 +103,8 @@ class Order2(models.Model):
                 order_item.delete()
             order_item.quantity = quantity
             order_item.save()
+        
+        return self
             
     def clean(self):
         # Check if there is an existing order for this restaurant with status 'initiated' for this customer
