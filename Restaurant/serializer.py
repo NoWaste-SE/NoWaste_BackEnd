@@ -2,7 +2,6 @@ from decimal import Decimal
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from User.models import Restaurant ,Customer, RestaurantManager
-from User.serializers import MyAuthorSerializer
 from .models import *
 
 class RestaurantSerializer(serializers.ModelSerializer):
@@ -235,25 +234,3 @@ class LatLongSerializer(serializers.ModelSerializer):
         model = Restaurant
         fields = ['lat','lon']
         
-        
-class OrderItemSerializer2(serializers.ModelSerializer):
-    class Meta:
-        model = OrderItem2
-        fields = ['quantity', 'item']
-        read_only_fields = ['order']
-        
-    def create(self, validated_data):
-        item = validated_data.get('item')
-        quantity = validated_data.get('quantity')
-        user = self.context['request'].user
-        customer = Customer.objects.get(myauthor_ptr_id=user.id)
-        restaurant = Food.objects.filter(id=item.id).first().restaurant
-        order = Order2.objects.get_initiated_order(customer, restaurant).update_items(item, quantity)
-        return order
-
-class OrderSerializer2(serializers.ModelSerializer):
-    items = OrderItemSerializer2(many=True, read_only=True)
-
-    class Meta:
-        model = Order2
-        fields = '__all__'

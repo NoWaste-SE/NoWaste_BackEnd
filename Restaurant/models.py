@@ -82,14 +82,19 @@ class Order2(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='orders')
     order_date = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=20, default='pending')
 
     def __str__(self):
         return f"Order #{self.id} by {self.customer_name} on {self.order_date}"
 
     @property
     def total_price(self):
-        return sum(item.total_price for item in self.items.all())
+        items = OrderItem2.objects.filter(order=self)
+        return sum([item.total_price for item in items])
+    
+    @property
+    def total_price_after_discount(self):
+        items = OrderItem2.objects.filter(order=self)
+        return sum([item.total_price for item in items]) * (1 - self.restaurant.discount)
     
     def update_items(self, item, quantity):
         order_item, created = OrderItem2.objects.get_or_create(
@@ -104,7 +109,7 @@ class Order2(models.Model):
             order_item.quantity = quantity
             order_item.save()
         
-        return self
+        return order_item
             
     def clean(self):
         # Check if there is an existing order for this restaurant with status 'initiated' for this customer
@@ -117,7 +122,6 @@ class Order2(models.Model):
         if existing_orders.exists():
             raise ValidationError("You already have an existing order for this restaurant with status 'initiated'")
 
-    # Other fields and methods...
 
     
 class OrderItem2(models.Model):    
@@ -131,5 +135,9 @@ class OrderItem2(models.Model):
     @property
     def total_price(self):
         return self.quantity * self.item.price
+    
+    @property
+    def total_price_after_discount(self):
+        return self.total_price * (1 - self.order.restaurant.discount)
 
     # Other fields and methods...

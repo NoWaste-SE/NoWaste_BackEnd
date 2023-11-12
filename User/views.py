@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status ,generics
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
 from .serializers import *
 from .models import *
 from .utils import Util
@@ -417,3 +418,22 @@ class RestaurantInfoExportExcel(APIView):
             ws.cell(row=row_num, column=8, value=res.manager.email)
         wb.save(response)
         return response
+    
+    
+class OrderViewSet2(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer2
+    
+    def get_queryset(self):
+        user = self.request.user
+        customer = Customer.objects.get(myauthor_ptr_id=user.id)
+        return Order2.objects.filter(customer=customer)
+
+class OrderItemViewSet2(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderItemSerializer2
+    
+    def get_queryset(self):
+        user = self.request.user
+        customer = Customer.objects.get(myauthor_ptr_id=user.id)
+        return OrderItem2.objects.filter(order__customer=customer)
