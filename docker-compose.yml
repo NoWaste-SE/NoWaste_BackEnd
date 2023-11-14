@@ -12,18 +12,21 @@ services:
 
     depends_on:
       - db
+    networks:
+      - nowaste
 
   db:
-    container_name: database
+    container_name: db
     image: postgres:13.1-alpine
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
       - POSTGRES_USER=gen
       - POSTGRES_PASSWORD=gen39nowaste
       - POSTGRES_DB=nowaste
+    networks:
+      - nowaste
 
   nginx:
     image: nginx
@@ -43,3 +46,6 @@ volumes:
   postgres_data:
   static_volume:
   media_volume:
+
+networks:
+  nowaste:
