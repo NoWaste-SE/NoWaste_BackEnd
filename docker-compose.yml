@@ -17,7 +17,7 @@ services:
     container_name: database
     image: postgres:13.1-alpine
     ports:
-      - "5432:5432"
+      - nowaste:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
