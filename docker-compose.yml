@@ -4,7 +4,10 @@ services:
   backend:
     build: .
     container_name: backend
-    command: gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080
+    command: >
+      bash -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
     volumes:
       - .:/app
       - static_volume:/app/static
@@ -42,7 +45,6 @@ services:
       - backend
     networks:
       - nowaste
-
 
 volumes:
   postgres_data:
