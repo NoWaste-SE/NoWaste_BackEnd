@@ -9,6 +9,7 @@ from rest_framework.test import APIClient
 from .models import *
 from .serializers import *
 import random , string
+from django.db import connection
 
 # class UsersManagersTests(TestCase):
 
@@ -234,3 +235,43 @@ class ForgotPassSetNewPassTests(TestCase):
         data = {'email': 'test@example.com', 'password': '    '}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class DatabaseConnectionTests(TestCase):
+    def test_database_connection_is_open(self):
+        # Check if the database connection is open
+        self.assertTrue(connection.connection is not None)
+
+    def test_database_connection(self):
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1')
+            result = cursor.fetchone()
+        self.assertEqual(result, (1,))
+
+    def test_database_name(self):
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT current_database()')
+            result = cursor.fetchone()
+        self.assertEqual(result[0], 'test_nowaste')
+
+    def test_create_and_retrieve_model(self):
+        MyAuthor.objects.create(name='Test Item', email='test@example.com')
+        # Retrieve the instance from the database
+        test_item = MyAuthor.objects.get(name='Test Item')
+        self.assertEqual(test_item.name, 'Test Item')
+        self.assertEqual(test_item.email, 'test@example.com')
+
+    def test_update_model(self):
+        test_item = MyAuthor.objects.create(name='Test Item', email='test@example.com')
+        test_item.name = 'Updated name'
+        test_item.save()
+        updated_item = MyAuthor.objects.get(email='test@example.com')
+        self.assertEqual(updated_item.name, 'Updated name')
+
+    def test_delete_model(self):
+        MyAuthor.objects.create(name='Test Item', email='test@example.com')
+        MyAuthor.objects.filter(name='Test Item').delete()
+        deleted_item = MyAuthor.objects.filter(name='Test Item').first()
+        self.assertIsNone(deleted_item)
+        with self.assertRaises(MyAuthor.DoesNotExist):
+            MyAuthor.objects.get(name='Test Item')
