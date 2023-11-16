@@ -96,4 +96,12 @@ class VC_Codes(AbstractBaseUser):
     def __str__(self) -> str:
         return str(self.email)
 
+'''class for temp managers are waiting for admin confirmation'''
+class TempManager(models.Model):
+    email = models.EmailField(unique= True)
+    name = models.CharField(max_length=255)
+    password = models.CharField(max_length=528,validators=[MinLengthValidator(4)])
+    def __str__(self) -> str:
+        return self.name
+
 

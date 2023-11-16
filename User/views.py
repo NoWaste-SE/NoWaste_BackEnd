@@ -42,12 +42,21 @@ class VerifyEmail(APIView):
             except VC_Codes.DoesNotExist:
                 return Response("There is not any user with the given email" , status=status.HTTP_404_NOT_FOUND)
             if user_data['code'] == user.vc_code:
-                VC_Codes.objects.filter(vc_code = user.vc_code).delete()                
-                serializer.save()
-                myauthor = MyAuthor.objects.get(email = user_data['email'])
-                myauthor.role = user_data['role']
-                myauthor.save()
-                return Response(user_data, status=status.HTTP_201_CREATED)
+                VC_Codes.objects.filter(vc_code = user.vc_code).delete()   
+                if user_data['role'] == "customer":
+                    serializer.save()
+                    myauthor = MyAuthor.objects.get(email = user_data['email'])
+                    myauthor.role = user_data['role']
+                    myauthor.save()
+                    return Response(user_data, status=status.HTTP_201_CREATED)
+                if user_data['role']=="restaurant":
+                    if TempManager.objects.filter(email=user_data['email']).exists():
+                        return Response("You are already waiting for admin approval", status=status.HTTP_400_BAD_REQUEST)
+                    tmp = TempManager.objects.create(email=user_data['email'], name=user_data['name'])
+                    tmp.set_password(user_data['password'])
+                    tmp.save()
+                    return Response("Please wait for admin confirmation.", status=status.HTTP_200_OK)
+
         return Response("verification code is wrong", status=status.HTTP_400_BAD_REQUEST)
     def get(self, request):
         serializer = BaseCreateUserSerializer()
