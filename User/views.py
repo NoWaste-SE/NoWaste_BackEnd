@@ -421,6 +421,7 @@ class RestaurantInfoExportExcel(APIView):
     
     
 class OrderViewSet2(viewsets.ModelViewSet):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer2
     
@@ -430,6 +431,7 @@ class OrderViewSet2(viewsets.ModelViewSet):
         return Order2.objects.filter(customer=customer)
 
 class OrderItemViewSet2(viewsets.ModelViewSet):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = OrderItemSerializer2
     

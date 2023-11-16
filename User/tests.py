@@ -8,6 +8,12 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from .models import MyAuthor, VC_Codes
 from .serializers import ForgotPasswordSerializer
+from rest_framework.test import APITestCase, APIRequestFactory
+from rest_framework.authtoken.models import Token
+from rest_framework import status
+from User.views import OrderViewSet2
+from User.models import MyAuthor
+from rest_framework_simplejwt.tokens import AccessToken
 
 
 # class UsersManagersTests(TestCase):
@@ -111,3 +117,59 @@ class ForgotPasswordViewSetTests(TestCase):
             self.assertEqual(response_resend.status_code, status.HTTP_201_CREATED)
             updated_vc_code = VC_Codes.objects.get(email='n.haghighy@gmail.com').vc_code
             self.assertNotEqual(initial_vc_code, updated_vc_code)
+
+
+# class OrderViewSet2Test(APITestCase):
+#     # def setUp(self):
+#     #     self.user = MyAuthor.objects.create(
+#     #         email='test@gmail.com',
+#     #         name='test',
+#     #         is_staff=False,
+#     #         is_active=True,
+#     #         is_superuser=False,
+#     #         is_admin=False,
+#     #         password='1234',
+#     #         role='customer'
+#     #     )
+#     #     access_token = Token.objects.create(user=self.user)
+#     #     self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token.key)
+    
+#     def test_get_order(self):
+#         self.user = MyAuthor.objects.create(
+#             email='test@gmail.com',
+#             password='1234',
+#         )
+#         access_token = Token.objects.create(user=self.user)
+#         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token.key)
+#         response = self.client.get(reverse('order'))
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+class OrderViewSet2TestCase(APITestCase):
+    def setUp(self):
+        self.url = reverse('order')
+    
+    def athenticate(self):
+        # self.client.post(
+        #     reverse("signup"),
+        #     {
+        #         "email": "jonathan@app.com",
+        #         "password": "password##!123",
+        #         "name": "jonathan",
+        #     },
+        # )
+
+        response = self.client.post(
+            reverse("login"),
+            {
+                "email": "admin@gmail.com",
+                "password": "1234",
+            },
+        )
+        print(response.data)
+        token = response.data["access_token"]
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        
+    def test_order_list(self):
+        self.athenticate()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
