@@ -2,8 +2,8 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from .models import *
 from cities_light.models import Country, City
-
-
+from Restaurant.models import Restaurant, Food, OrderItem2, Order2
+from Restaurant.serializer import RestaurantSerializer, FoodSerializer
 
 class BaseCreateUserSerializer(serializers.ModelSerializer): 
     role = serializers.CharField(max_length=255, default="default")
@@ -204,3 +204,46 @@ class LatLongSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ['lat','lon']
+        
+        
+class OrderItemSerializer2(serializers.ModelSerializer):
+    quantity = serializers.IntegerField(default=1, min_value=1)
+    
+    class Meta:
+        model = OrderItem2
+        fields = ['quantity', 'item']
+        read_only_fields = ['order']
+        
+    def create(self, validated_data):
+        item = validated_data.get('item')
+        quantity = validated_data.get('quantity')
+        user = self.context['request'].user
+        customer = Customer.objects.get(myauthor_ptr_id=user.id)
+        restaurant = Food.objects.filter(id=item.id).first().restaurant
+        order_item = Order2.objects.get_initiated_order(customer, restaurant).update_items(item, quantity)
+        return order_item
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['total_price'] = instance.total_price
+        data['total_price_after_discount'] = instance.total_price_after_discount
+        data['item'] = FoodSerializer(instance.item).data
+        return data
+        
+
+class OrderSerializer2(serializers.ModelSerializer):
+    class Meta:
+        model = Order2
+        fields = ['id', 'status', 'order_date', 'customer', 'restaurant', 'total_price']
+        read_only_fields = ['customer', 'restaurant', 'status', 'id', 'order_date', 'total_price']
+        
+    def get_items(self, order):
+        return OrderItemSerializer2(OrderItem2.objects.filter(order=order), many=True).data
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['total_price'] = instance.total_price
+        data['total_price_after_discount'] = instance.total_price_after_discount
+        data['restaurant'] = RestaurantSerializer(instance.restaurant).data
+        data['items'] = OrderItemSerializer2(OrderItem2.objects.filter(order=instance), many=True).data
+        return data

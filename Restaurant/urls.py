@@ -39,7 +39,6 @@ urlpatterns = [
     path('getaddr',get_addr,name='get_addr'),
     path('<int:restaurant_id>/lat_long',LatLongUpdateRetreive.as_view(),name='get_update_lat_long'),
     path('test', test, name='test'),
-    path('order/add_item/', OrderItemViewSet2.as_view({'post': 'create', 'get': 'list'}), name='order-add-item'),
     path('excel/manager/<int:manager_id>/order-history/',OrderHistoryManagerExportExcel.as_view(),name='csv-order-history-manager'),
     path('excel/customer/<int:restaurant_id>/<int:userId>/order-history/',OrderHistoryCustomerExportExcel.as_view(),name='csv-order-history-customer'),
     path('excel/customer/<int:userId>/order-history/',OrderHistoryDiffRestaurantCustomerExportExcel.as_view(),name='csv-order-history-customer'),
