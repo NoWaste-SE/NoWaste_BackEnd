@@ -178,3 +178,59 @@ class ForgotPassVerifyTests(TestCase):
         data = {'email': 'test@example.com', 'code': vc_code}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class ForgotPassSetNewPassTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_forgot_pass_set_new_pass_successful(self):
+        user = MyAuthor.objects.create(email='test@example.com', name='Test User')
+        url = reverse('fp-newpassword')  
+        data = {'email': 'test@example.com', 'password': 'newpassword'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        user.refresh_from_db()
+        self.assertTrue(user.check_password('newpassword'))
+
+    def test_forgot_pass_set_new_pass_invalid_email(self):
+        url = reverse('fp-newpassword')  
+        data = {'email': 'invalid_email', 'password': 'newpassword'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_forgot_pass_set_new_pass_user_not_found(self):
+        url = reverse('fp-newpassword')  
+        data = {'email': 'nonexistent@example.com', 'password': 'newpassword'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_forgot_pass_set_new_pass_invalid_data(self):
+        url = reverse('fp-newpassword')  
+        data = {'email': 'test@example.com'}  # Missing 'password' field
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_forgot_pass_set_new_pass_password_update(self):
+        user = MyAuthor.objects.create(email='test@example.com', name='Test User')
+        old_password = user.password
+        url = reverse('fp-newpassword') 
+        data = {'email': 'test@example.com', 'password': 'newpassword'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        user.refresh_from_db()
+        self.assertNotEqual(user.password, old_password)
+
+    def test_forgot_pass_set_new_pass_empty_password(self):
+        user = MyAuthor.objects.create(email='test@example.com', name='Test User')
+        url = reverse('fp-newpassword') 
+        data = {'email': 'test@example.com', 'password': ''}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_forgot_pass_set_new_pass_whitespace_password(self):
+        user = MyAuthor.objects.create(email='test@example.com', name='Test User')
+        url = reverse('fp-newpassword') 
+        data = {'email': 'test@example.com', 'password': '    '}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
