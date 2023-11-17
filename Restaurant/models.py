@@ -58,17 +58,17 @@ class Comment(models.Model):
         return str(self.writer.name) + " "+  str(self.restaurant.name)
 
 class OrderManager(models.Manager):
-    @classmethod
-    def get_initiated_order(cls, customer, restaurant):
-        order, created = cls.get_or_create(
+    def get_initiated_order(self, customer, restaurant):
+        order, created = self.get_or_create(
             customer=customer,
             restaurant=restaurant,
             status='initiated'
         )
         return order
 
+
 class Order2(models.Model):
-    objects = OrderManager
+    objects = OrderManager()
     
     ORDER_STATUS_CHOICES = (
         ('initiated', 'Initiated'),
@@ -82,15 +82,35 @@ class Order2(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='orders')
     order_date = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=20, default='pending')
 
-    def __str__(self):
-        return f"Order #{self.id} by {self.customer_name} on {self.order_date}"
+#    def __str__(self):
+#        return f"Order #{self.id} by {self.customer_name} on {self.order_date}"
 
     @property
     def total_price(self):
-        return sum(item.total_price for item in self.items.all())
+        items = OrderItem2.objects.filter(order=self)
+        return sum([item.total_price for item in items])
+    
+    @property
+    def total_price_after_discount(self):
+        items = OrderItem2.objects.filter(order=self)
+        return sum([item.total_price for item in items]) * (1 - self.restaurant.discount)
+    
+    def update_items(self, item, quantity):
+        order_item, created = OrderItem2.objects.get_or_create(
+            order=self,
+            item=item,
+            defaults={'quantity': quantity}
+        )
 
+        if not created:
+            if quantity == 0:
+                order_item.delete()
+            order_item.quantity = quantity
+            order_item.save()
+        
+        return order_item
+            
     def clean(self):
         # Check if there is an existing order for this restaurant with status 'initiated' for this customer
         existing_orders = Order2.objects.filter(
@@ -102,46 +122,22 @@ class Order2(models.Model):
         if existing_orders.exists():
             raise ValidationError("You already have an existing order for this restaurant with status 'initiated'")
 
-    # Other fields and methods...
 
-class OrderItemManager(models.Manager):
-    def get_by_order_and_item(self, order, item):
-        return self.get(order=order, item=item)
-
-    @classmethod
-    def add_to_order(cls, item, quantity):
-        order = Order2.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
-        order_item, created = cls.get_or_create(order=order, item=item)
-        if not created:
-            order_item.quantity += quantity
-            order_item.save()
-        return order_item
-
-    def remove_from_order(self, item, quantity):
-        order = Order2.objects.get_initiated_order(customer=item.customer, restaurant=item.restaurant)
-        order_item = self.get_by_order_and_item(order=order, item=item)
-        if order_item.quantity > quantity:
-            order_item.quantity -= quantity
-            order_item.save()
-        else:
-            order_item.delete()
-        return order_item
     
-    def same_restaurant(self):
-        return True
-
-class OrderItem2(models.Model):
-    objects = OrderItemManager
-
+class OrderItem2(models.Model):    
     order = models.ForeignKey(Order2, on_delete=models.CASCADE)
-    item = models.ForeignKey(Food, on_delete=models.CASCADE, validators=[objects.same_restaurant])
+    item = models.ForeignKey(Food, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 
-    def __str__(self):
-        return f"{self.quantity}x {self.item_name} in Order #{self.order.id}"
+#    def __str__(self):
+#        return f"{self.quantity}x {self.item_name} in Order #{self.order.id}"
 
     @property
     def total_price(self):
         return self.quantity * self.item.price
+    
+    @property
+    def total_price_after_discount(self):
+        return self.total_price * (1 - self.order.restaurant.discount)
 
     # Other fields and methods...
