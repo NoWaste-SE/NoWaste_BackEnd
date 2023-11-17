@@ -6,6 +6,12 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
+from .models import MyAuthor, VC_Codes
+from .serializers import ForgotPasswordSerializer
+from rest_framework.test import APITestCase, APIRequestFactory
+from rest_framework import status
+from User.views import OrderViewSet2
+from User.models import MyAuthor
 from .models import *
 from .serializers import *
 import random , string
@@ -275,3 +281,60 @@ class DatabaseConnectionTests(TestCase):
         self.assertIsNone(deleted_item)
         with self.assertRaises(MyAuthor.DoesNotExist):
             MyAuthor.objects.get(name='Test Item')
+
+class OrderViewSet2TestCase(APITestCase):
+    def setUp(self):
+        self.url = reverse('order')
+    
+    def athenticate(self, email, passw, name, role):
+        # SignUp
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "name": name,
+                "email": email,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Verify Email
+        response = self.client.post(
+            reverse("verify-email"),
+            {
+                "name": name,
+                "password": passw,
+                "role": role,
+                "email": email,
+                "code": VC_Codes.objects.get(email=email).vc_code,
+            }
+        )      
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Login
+        response = self.client.post(
+            reverse("login"),
+            {
+                "email": email,
+                "password": passw,
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Get Token
+        token = response.data['access_token']
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        
+    def test_order_list(self):
+        self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")       
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+    def test_order_unathenticated_user(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_order_method_notAllowed(self):
+        self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        
