@@ -437,3 +437,23 @@ class OrderItemViewSet2(viewsets.ModelViewSet):
         user = self.request.user
         customer = Customer.objects.get(myauthor_ptr_id=user.id)
         return OrderItem2.objects.filter(order__customer=customer)
+
+class GetRestaurants(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        if request.user.is_admin:
+            restaurants = Restaurant.objects.all()
+            serializer = RestaurantSerializer(restaurants, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'detail': 'user does not have admin permissions!'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class GetCustomers(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        if request.user.is_admin:
+            customers = Customer.objects.all()
+            serializer = CustomerSerializer(customers, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'detail': 'user does not have admin permissions!'}, status=status.HTTP_401_UNAUTHORIZED)
