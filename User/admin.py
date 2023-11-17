@@ -69,4 +69,5 @@ admin.site.register(Restaurant,RestaurantAdmin)
 admin.site.register(VC_Codes,VC_CodesAdmin)
 admin.site.register(RestaurantManager,RestaurantManagerAdmin)
 admin.site.register(MyAuthor, UserAdmin)
+admin.site.register(TempManager)
 

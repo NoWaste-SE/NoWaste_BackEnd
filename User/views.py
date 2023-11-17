@@ -426,3 +426,30 @@ class RestaurantInfoExportExcel(APIView):
             ws.cell(row=row_num, column=8, value=res.manager.email)
         wb.save(response)
         return response
+    
+
+'''Accept by admin class'''   
+class AcceptByAdminView(APIView):
+    permission_classes = (permissions.AllowAny,)
+    def get(self,request):
+        tmp = TempManager.objects.first()
+        email = tmp.email
+        name = tmp.name
+        template = render_to_string('confirm_admin.html', {'name': name})
+        data = {'to_email': email, 'body': template, 'subject': 'Your request for NoWaste has been accepted :)'}
+        Util.send_email(data)
+        tmp.delete()
+        return Response("email sent.", status=status.HTTP_200_OK)
+    
+'''Reject by admin class'''   
+class RejectByAdminView(APIView):
+    permission_classes = (permissions.AllowAny,)
+    def get(self,request):
+        tmp = TempManager.objects.first()
+        email = tmp.email
+        name = tmp.name
+        template = render_to_string('reject_admin.html', {'name': name})
+        data = {'to_email': email, 'body': template, 'subject': 'Your request for NoWaste has been rejected :('}
+        Util.send_email(data)
+        tmp.delete()
+        return Response("email sent.", status=status.HTTP_200_OK)

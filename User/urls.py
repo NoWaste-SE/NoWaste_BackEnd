@@ -22,4 +22,6 @@ urlpatterns = [
     path('cities-of-country/', CitiesOfCountry.as_view(), name='cities-of-country'),
     path('<int:user_id>/lat_long/',LatLongUpdateRetreive.as_view(),name='get_lat_long'),
     path('excel/restaurants-info/', RestaurantInfoExportExcel.as_view(), name='csv-restaurants-info'),
+    path('accept/', AcceptByAdminView.as_view(), name='accept'),
+    path('reject/', RejectByAdminView.as_view(), name='reject'),
 ]
