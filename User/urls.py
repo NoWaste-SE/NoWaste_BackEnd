@@ -32,4 +32,5 @@ urlpatterns = [
     path('temp-manager-reject/<int:pk>/',TempManagerRejection.as_view(),name='reject-tmpMng'),
     path('accept/', AcceptByAdminView.as_view(), name='accept'),
     path('reject/', RejectByAdminView.as_view(), name='reject'),
+    path('admin-profile/', AdminProfile.as_view(), name='admin-profile'),
 ]

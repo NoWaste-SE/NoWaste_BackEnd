@@ -251,4 +251,28 @@ class OrderSerializer2(serializers.ModelSerializer):
 class TempManagerSerializer(serializers.ModelSerializer):
     class Meta:
         model = TempManager
-        fields =  '__all__'
+        fields =  ['email','name']
+
+class ManagerSerialzer(serializers.ModelSerializer):
+    class Meta : 
+        model = RestaurantManager
+        fields = '__all__'
+
+class AdminPanelSerializer(serializers.ModelSerializer):
+    def get_customers_data(self,MyAuthor):
+        return CustomerSerializer(Customer.objects.all(),many = True).data
+    def get_Restaurnts_data(self,MyAthor):
+        return RestaurantSerializer(Restaurant.objects.all(),many = True).data
+    def get_managers_data(self,MyAthor):
+        return ManagerSerialzer(RestaurantManager.objects.all(),many = True).data
+    # def get_tempManagers_data(self,MyAthor):
+    #     return TempManagerSerializer(TempManager.objects.all(),many = True).data
+    
+    customers_data = serializers.SerializerMethodField()
+    Restaurnts_data = serializers.SerializerMethodField()
+    managers_data = serializers.SerializerMethodField()
+    # tempManagers_data = serializers.SerializerMethodField()
+    class Meta : 
+        model = MyAuthor
+        # fields = ['customers_data','Restaurnts_data','managers_data','tempManagers_data']
+        fields = ['customers_data','Restaurnts_data','managers_data']

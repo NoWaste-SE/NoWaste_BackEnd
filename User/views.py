@@ -574,3 +574,7 @@ class RejectByAdminView(APIView):
         Util.send_email(data)
         tmp.delete()
         return Response("email sent.", status=status.HTTP_200_OK)
+
+class AdminProfile(generics.ListAPIView):
+    serializer_class = AdminPanelSerializer
+    queryset = MyAuthor.objects.all()
