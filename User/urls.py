@@ -25,4 +25,6 @@ urlpatterns = [
     path('orders/', OrderViewSet2.as_view({'get': 'list'}), name='order'),
     path('orders/<int:pk>/', OrderViewSet2.as_view({'get': 'retrieve', 'put': 'update'}), name='order-detail'),
     path('orders/items/', OrderItemViewSet2.as_view({'post': 'create', 'get': 'list'}), name='order-add-item'),
+    path('all_restaurants/', GetRestaurants.as_view(), name='all_restaurants'),
+    path('all_customers/', GetCustomers.as_view(), name='all_customers'),
 ]

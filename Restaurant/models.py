@@ -83,8 +83,8 @@ class Order2(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='orders')
     order_date = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Order #{self.id} by {self.customer_name} on {self.order_date}"
+#    def __str__(self):
+#        return f"Order #{self.id} by {self.customer_name} on {self.order_date}"
 
     @property
     def total_price(self):
@@ -129,8 +129,8 @@ class OrderItem2(models.Model):
     item = models.ForeignKey(Food, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 
-    def __str__(self):
-        return f"{self.quantity}x {self.item_name} in Order #{self.order.id}"
+#    def __str__(self):
+#        return f"{self.quantity}x {self.item_name} in Order #{self.order.id}"
 
     @property
     def total_price(self):
