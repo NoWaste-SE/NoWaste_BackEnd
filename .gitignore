@@ -130,3 +130,6 @@ dmypy.json
 
 # vscode
 *.vscode
+
+# Exclude Django migrations
+**/migrations/

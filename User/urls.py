@@ -22,6 +22,11 @@ urlpatterns = [
     path('cities-of-country/', CitiesOfCountry.as_view(), name='cities-of-country'),
     path('<int:user_id>/lat_long/',LatLongUpdateRetreive.as_view(),name='get_lat_long'),
     path('excel/restaurants-info/', RestaurantInfoExportExcel.as_view(), name='csv-restaurants-info'),
+    path('orders/', OrderViewSet2.as_view({'get': 'list'}), name='order'),
+    path('orders/<int:pk>/', OrderViewSet2.as_view({'get': 'retrieve', 'put': 'update'}), name='order-detail'),
+    path('orders/items/', OrderItemViewSet2.as_view({'post': 'create', 'get': 'list'}), name='order-add-item'),
+    path('all_restaurants/', GetRestaurants.as_view(), name='all_restaurants'),
+    path('all_customers/', GetCustomers.as_view(), name='all_customers'),
     path('accept/', AcceptByAdminView.as_view(), name='accept'),
     path('reject/', RejectByAdminView.as_view(), name='reject'),
 ]
