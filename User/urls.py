@@ -30,4 +30,6 @@ urlpatterns = [
     # path('temp-manager/',TempManagerConfirmation.as_view(),name='add-delete-tmpMng'),
     path('temp-manager-confirm/',TempManagerConfirmation.as_view(),name='confirm-tmpMng'),
     path('temp-manager-reject/<int:pk>/',TempManagerRejection.as_view(),name='reject-tmpMng'),
+    path('accept/', AcceptByAdminView.as_view(), name='accept'),
+    path('reject/', RejectByAdminView.as_view(), name='reject'),
 ]
