@@ -8,6 +8,12 @@ from django.urls import reverse
 from User.models import *
 # from rest_framework_simplejwt.tokens import AccessToken
 from .models import *
+from rest_framework.test import APIClient
+from rest_framework import status
+from datetime import datetime
+import openpyxl
+from django.core.files.base import ContentFile
+
 
 
 # # creat test for orderviewset2
@@ -166,3 +172,140 @@ class FoodModelTest(TestCase):
         )
         with self.assertRaises(Exception):
             food_large_remainder.save()
+
+
+class OrderHistoryManagerExportExcelTestCase(TestCase):
+    def setUp(self):
+        self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
+        self.restaurant = Restaurant.objects.create(name='Test Restaurant', number='123', manager=self.manager)
+        self.food = Food.objects.create(name='Test Food', price=10.0, restaurant=self.restaurant)
+        self.user = Customer.objects.create(name='Test User', email='test_user@example.com')
+        self.order = Order.objects.create(userId=self.user, status='Delivered', restaurant=self.restaurant)
+        OrderItem.objects.create(order=self.order, food=self.food, quantity=2)
+
+    def test_export_excel(self):
+        client = APIClient()
+        url = reverse('csv-order-history-manager', kwargs={'manager_id': self.manager.id})
+        response = client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        self.assertTrue('Content-Disposition' in response)
+        # Check the filename
+        expected_filename = 'restaurants-orders.xlsx'
+        content_disposition = response['Content-Disposition']
+        self.assertTrue(expected_filename in content_disposition)
+        content_file = ContentFile(response.content)
+        wb = openpyxl.load_workbook(content_file)
+        ws = wb.active
+        # Check the headers
+        expected_headers = ['Restaurant Name', 'Restaurant Number', 'Food Name', 'Food Price', 'Quantity', 'User Name', 'User Email', 'Date', 'Status']
+        for col_num, header in enumerate(expected_headers, 1):
+            cell_value = ws.cell(row=1, column=col_num).value
+            self.assertEqual(cell_value, header)
+        # Check the data
+        cell_values = [ws.cell(row=2, column=col_num).value for col_num in range(1, 10)]
+        expected_data = [
+            str(self.restaurant.name),
+            str(self.restaurant.number),
+            str(self.food.name),
+            str("10.00"),
+            str(2),
+            str(self.user.name),
+            str(self.user.email),
+            str(self.order.created_at.date()), 
+            str(self.order.status),
+        ]
+        self.assertEqual(cell_values, expected_data)
+
+
+
+class OrderHistoryCustomerExportExcelTestCase(TestCase):
+    def setUp(self):
+        self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
+        self.restaurant = Restaurant.objects.create(name='Test Restaurant', number='123', manager=self.manager)
+        self.food = Food.objects.create(name='Test Food', price=10, restaurant=self.restaurant)
+        self.user = Customer.objects.create(name='Test User', email='test_user@example.com')
+        self.order = Order.objects.create(userId=self.user, status='Delivered', restaurant=self.restaurant)
+        OrderItem.objects.create(order=self.order, food=self.food, quantity=2)
+    def test_export_excel(self):
+        client = APIClient()
+        url = reverse('csv-order-history-customer', kwargs={'restaurant_id': self.restaurant.id, 'userId': self.user.id})
+        response = client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        self.assertTrue('Content-Disposition' in response)
+        expected_filename = 'orders-history.xlsx'
+        content_disposition = response['Content-Disposition']
+        self.assertTrue(expected_filename in content_disposition)
+        content_file = ContentFile(response.content)
+        wb = openpyxl.load_workbook(content_file)
+        ws = wb.active
+        # Check the headers
+        expected_headers = ['Restaurant Name', 'Restaurant Number', 'Food Name', 'Food Price', 'Quantity', 'Date', 'Status']
+        for col_num, header in enumerate(expected_headers, 1):
+            cell_value = ws.cell(row=1, column=col_num).value
+            self.assertEqual(cell_value, header)
+        # Check the data
+        cell_values = [ws.cell(row=2, column=col_num).value for col_num in range(1, 8)]
+        expected_data = [
+            str(self.restaurant.name),
+            str(self.restaurant.number),
+            str(self.food.name),
+            str("10.00"),
+            str(2), 
+            str(self.order.created_at.date()),
+            str(self.order.status),
+        ]
+        self.assertEqual(cell_values, expected_data)
+
+
+class OrderHistoryDiffRestaurantCustomerExportExcelTestCase(TestCase):
+    def setUp(self):
+        self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
+        self.restaurant1 = Restaurant.objects.create(name='Restaurant 1', number='111', manager=self.manager)
+        self.restaurant2 = Restaurant.objects.create(name='Restaurant 2', number='222', manager=self.manager)
+        self.food1 = Food.objects.create(name='Food 1', price=10, restaurant=self.restaurant1)
+        self.food2 = Food.objects.create(name='Food 2', price=15, restaurant=self.restaurant2)
+        self.user = Customer.objects.create(name='Test User', email='test_user@example.com')
+        self.order1 = Order.objects.create(userId=self.user, status='Delivered', restaurant=self.restaurant1)
+        OrderItem.objects.create(order=self.order1, food=self.food1, quantity=2)
+        self.order2 = Order.objects.create(userId=self.user, status='Pending', restaurant=self.restaurant2)
+        OrderItem.objects.create(order=self.order2, food=self.food2, quantity=1)
+
+    def test_export_excel(self):
+        client = APIClient()
+        url = reverse('csv-diff-order-history-customer', kwargs={'userId': self.user.id})
+        response = client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        self.assertTrue('Content-Disposition' in response)
+        expected_filename = 'orders-history.xlsx'
+        content_disposition = response['Content-Disposition']
+        self.assertTrue(expected_filename in content_disposition)
+        content_file = ContentFile(response.content)
+        wb = openpyxl.load_workbook(content_file)
+        ws = wb.active
+        # Check the headers
+        expected_headers = ['Restaurant Name', 'Restaurant Number', 'Food Name', 'Food Price', 'Quantity', 'Date', 'Status']
+        for col_num, header in enumerate(expected_headers, 1):
+            cell_value = ws.cell(row=1, column=col_num).value
+            self.assertEqual(cell_value, header)
+        # Check the data
+        cell_values = [ws.cell(row=row, column=col).value for row in range(2, 4) for col in range(1, 8)]
+        expected_data = [
+            str(self.restaurant1.name),
+            str(self.restaurant1.number),
+            str(self.food1.name),
+            str("10.00"),
+            str(2), 
+            str(self.order1.created_at.date()), 
+            str(self.order1.status),
+            str(self.restaurant2.name),
+            str(self.restaurant2.number),
+            str(self.food2.name),
+            str("15.00"),
+            str(1), 
+            str(self.order2.created_at.date()),
+            str(self.order2.status),
+        ]
+        self.assertEqual(cell_values, expected_data)

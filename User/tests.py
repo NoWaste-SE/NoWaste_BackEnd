@@ -9,13 +9,14 @@ from rest_framework.test import APIClient
 from .models import MyAuthor, VC_Codes
 from .serializers import ForgotPasswordSerializer
 from rest_framework.test import APITestCase, APIRequestFactory
-from rest_framework import status
 from User.views import OrderViewSet2
 from User.models import MyAuthor
 from .models import *
 from .serializers import *
 import random , string
 from django.db import connection
+import openpyxl
+from django.core.files.base import ContentFile
 
 # class UsersManagersTests(TestCase):
 
@@ -338,3 +339,42 @@ class OrderViewSet2TestCase(APITestCase):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
         
+
+
+class RestaurantInfoExportExcelTestCase(TestCase):
+    def setUp(self):
+        self.restaurant = Restaurant.objects.create(
+            name='Test Restaurant',
+            type='Iranian',
+            address='Test Address',
+            discount=0.3,
+            rate=4.5,
+            number='123456789',
+            manager=RestaurantManager.objects.create(name='Test Manager', email='test@example.com')
+        )
+
+    def test_export_excel(self):
+        client = APIClient()
+        url = reverse('csv-restaurants-info')
+        response = client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        self.assertTrue('Content-Disposition' in response)
+        # Check the filename
+        expected_filename = 'restaurants-info.xlsx'
+        content_disposition = response['Content-Disposition']
+        self.assertTrue(expected_filename in content_disposition)
+        content_file = ContentFile(response.content)
+        wb = openpyxl.load_workbook(content_file)
+        ws = wb.active
+        # Check the headers
+        expected_headers = ['Name', 'Type', 'Address', 'Discount', 'Rate', 'Number', 'Manager Name', 'Manager Email']
+        for col_num, header in enumerate(expected_headers, 1):
+            cell_value = ws.cell(row=1, column=col_num).value
+            self.assertEqual(cell_value, header)
+        # Check the data
+        cell_values = [ws.cell(row=2, column=col_num).value for col_num in range(1, 9)]
+        expected_data = [self.restaurant.name, self.restaurant.type, self.restaurant.address,
+                         self.restaurant.discount, self.restaurant.rate, self.restaurant.number,
+                         self.restaurant.manager.name, self.restaurant.manager.email]
+        self.assertEqual(cell_values, expected_data)
