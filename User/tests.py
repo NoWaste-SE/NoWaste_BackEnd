@@ -5,49 +5,10 @@
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient
-from .models import MyAuthor, VC_Codes
+from rest_framework.test import APIClient,APITestCase
+from User.models import MyAuthor,VC_Codes
 from .serializers import ForgotPasswordSerializer
 
-
-# class UsersManagersTests(TestCase):
-
-#     def test_create_user(self):
-#         User = get_user_model()
-#         user = User.objects.create_user(email="normal@user.com", password="foo")
-#         self.assertEqual(user.email, "normal@user.com")
-#         self.assertTrue(user.is_active)
-#         self.assertFalse(user.is_staff)
-#         self.assertFalse(user.is_superuser)
-#         try:
-#             # username is None for the AbstractUser option
-#             # username does not exist for the AbstractBaseUser option
-#             self.assertIsNone(user.username)
-#         except AttributeError:
-#             pass
-#         with self.assertRaises(TypeError):
-#             User.objects.create_user()
-#         with self.assertRaises(TypeError):
-#             User.objects.create_user(email="")
-#         with self.assertRaises(ValueError):
-#             User.objects.create_user(email="", password="foo")
-
-#     def test_create_superuser(self):
-#         User = get_user_model()
-#         admin_user = User.objects.create_superuser(email="super@user.com", password="foo")
-#         self.assertEqual(admin_user.email, "super@user.com")
-#         self.assertTrue(admin_user.is_active)
-#         self.assertTrue(admin_user.is_staff)
-#         self.assertTrue(admin_user.is_superuser)
-#         try:
-#             # username is None for the AbstractUser option
-#             # username does not exist for the AbstractBaseUser option
-#             self.assertIsNone(admin_user.username)
-#         except AttributeError:
-#             pass
-#         with self.assertRaises(ValueError):
-#             User.objects.create_superuser(
-#                 email="super@user.com", password="foo", is_superuser=False)
 
 
 class ForgotPasswordViewSetTests(TestCase):
@@ -73,3 +34,64 @@ class ForgotPasswordViewSetTests(TestCase):
         data = {'email': 'nonexistent@example.com'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+'''Implement LoginViewTest'''
+class LoginViewTestCase(APITestCase):
+    def setUp(self):
+        self.url = reverse('login')
+    
+    def athenticate(self, email, passw, name, role):
+        # SignUp
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "name": name,
+                "email": email,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Verify Email
+        response = self.client.post(
+            reverse("verify-email"),
+            {
+                "name": name,
+                "password": passw,
+                "role": role,
+                "email": email,
+                "code": VC_Codes.objects.get(email=email).vc_code,
+            }
+        )      
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Login
+        response = self.client.post(
+            reverse("login"),
+            {
+                "email": email,
+                "password": passw,
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Get Token
+        token = response.data['access_token']
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        
+    def test_login_checkAuthentication(self):
+        self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")       
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+    
+    def test_login_method_notAllowed(self):
+        self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")
+        response = self.client.delete(self.url, {
+                                                    "password": "test_pass",
+                                                        "email": "test_email@gmail.com"
+                                                    })
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+
