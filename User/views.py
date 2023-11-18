@@ -510,11 +510,19 @@ class TempManagerConfirmation(mixins.CreateModelMixin,generics.GenericAPIView):
         if serializer.is_valid(raise_exception=True):
             name = request.data["name"]
             email = serializer.validated_data["email"]
-            passwd = serializer.validated_data["password"]
+            passwd = "None"
+            if TempManager.objects.filter(email = email,name = name).exists():
+                tmp = TempManager.objects.get(email = email,name = name)
+                template = render_to_string('confirm_admin.html', {'name': name})
+                data = {'to_email': email, 'body': template, 'subject': 'Your request for NoWaste has been accepted :)'}
+                Util.send_email(data)
+                tmp.delete()
+                passwd = tmp.password
+            
         # serializer = MyAuthorSerializer(data=request.data)
-            new_MyAuthor = MyAuthor.objects.create(email = email,name = name,password = passwd,role = "manager")
-            new_MyAuthor.save()
-            new_manager = RestaurantManager.objects.create(myauthor_ptr_id = new_MyAuthor.id)
+            # new_MyAuthor = MyAuthor.objects.create(email = email,name = name,password = passwd,role = "restaurant")
+            # new_MyAuthor.save()
+            new_manager = RestaurantManager.objects.create(email = email,name = name,password = passwd,role = "restaurant")
             new_manager.save()
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -540,6 +548,17 @@ class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
     queryset = TempManager.objects.all()
     lookup_field = 'id'
     lookup_url_kwarg = 'pk'
+    def get(self,request, *args, **kwargs):
+        pk = self.kwargs['pk']
+        if TempManager.objects.filter(id = pk).exists():
+            tmp = TempManager.objects.get(id = pk)
+            email = tmp.email
+            name = tmp.name
+            template = render_to_string('reject_admin.html', {'name': name})
+            data = {'to_email': email, 'body': template, 'subject': 'Your request for NoWaste has been rejected :('}
+            Util.send_email(data)
+            tmp.delete()
+        return Response("User rejected and email sent.", status=status.HTTP_200_OK)
     # def get(self,request, *args, **kwargs):
     #     return self.retrieve(request, *args, **kwargs)
 

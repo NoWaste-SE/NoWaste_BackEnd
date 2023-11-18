@@ -249,6 +249,7 @@ class OrderSerializer2(serializers.ModelSerializer):
         return data
     
 class TempManagerSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(validators=[])
     class Meta:
         model = TempManager
-        fields =  '__all__'
+        fields = ['email', 'name']
