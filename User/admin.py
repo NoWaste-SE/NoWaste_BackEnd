@@ -64,9 +64,16 @@ class VC_CodesAdmin(admin.ModelAdmin):
     list_filter = ['name','vc_code']
     search_fields = ('name','vc_code')
 
+class TempManagerAdmin(admin.ModelAdmin):
+    ordering = ['name']
+    list_display = ['name', 'email', 'password']
+    list_filter = ['email','name']
+
 admin.site.register(Customer,CustomerAdmin)
 admin.site.register(Restaurant,RestaurantAdmin)
 admin.site.register(VC_Codes,VC_CodesAdmin)
 admin.site.register(RestaurantManager,RestaurantManagerAdmin)
 admin.site.register(MyAuthor, UserAdmin)
+admin.site.register(TempManager, TempManagerAdmin)
+
 

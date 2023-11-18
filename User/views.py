@@ -2,17 +2,14 @@ from django.contrib.auth import logout
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
+from rest_framework import status ,generics , permissions , mixins,viewsets
 from rest_framework.response import Response
-from rest_framework import status ,generics
-from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import viewsets
 from .serializers import *
 from .models import *
 from .utils import Util
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
-from rest_framework import generics
 from django.template.loader import render_to_string
 from django.core.validators import EmailValidator
 from django.forms import ValidationError
@@ -427,8 +424,7 @@ class RestaurantInfoExportExcel(APIView):
             ws.cell(row=row_num, column=8, value=res.manager.email)
         wb.save(response)
         return response
-    
-    
+
 class OrderViewSet2(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -468,3 +464,134 @@ class GetCustomers(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response({'detail': 'user does not have admin permissions!'}, status=status.HTTP_401_UNAUTHORIZED)
+
+# class TempManagerConfirmation(mixins.CreateModelMixin,mixins.DestroyModelMixin,generics.GenericAPIView):
+#     serializer_class = TempManagerSerializer
+#     # lookup_field = 'id'
+#     def get_serializer_class(self):
+#         if self.request.method == "POST":
+#             return MyAuthorSerializer
+#         elif self.request.method == "DELETE":
+#             return TempManager.objects.all()
+#         return TempManager.objects.all()
+        
+#     def get_queryset(self):
+#         if self.request.method == "POST":
+#             return MyAuthor.objects.all()
+#         elif self.request.method == "DELETE":
+#             return TempManager.objects.all()
+#         return TempManager.objects.all()
+    
+#     def get_object(self):
+#         queryset = self.get_queryset()
+#         obj = queryset.filter(id = self.request.user.id)
+#         self.check_object_permissions(self.request, obj)
+#         return obj
+    
+#     def post(self,request,*args, **kwargs):
+#         return self.create(request,*args,**kwargs)
+    
+#     def delete(self,request,*args, **kwargs):
+#         return self.destroy(request, *args, **kwargs)
+
+
+# def accept_tempMNG(request,*args, **kwargs):
+#     print()
+
+class TempManagerConfirmation(mixins.CreateModelMixin,generics.GenericAPIView):
+    serializer_class = TempManagerSerializer
+    # def get_serializer_class(self):
+    #     if self.request.method == "POST":
+    #         return MyAuthorSerializer
+    #     elif self.request.method == "DELETE":
+    #         return TempManager.objects.all()
+    #     return TempManager.objects.all()
+    
+    def post(self,request,*args, **kwargs):
+        serializer = TempManagerSerializer(data = request.data)
+        if serializer.is_valid(raise_exception=True):
+            name = request.data["name"]
+            email = serializer.validated_data["email"]
+            passwd = "None"
+            if TempManager.objects.filter(email = email,name = name).exists():
+                tmp = TempManager.objects.get(email = email,name = name)
+                template = render_to_string('confirm_admin.html', {'name': name})
+                data = {'to_email': email, 'body': template, 'subject': 'Your request for NoWaste has been accepted :)'}
+                Util.send_email(data)
+                tmp.delete()
+                passwd = tmp.password
+            
+        # serializer = MyAuthorSerializer(data=request.data)
+            # new_MyAuthor = MyAuthor.objects.create(email = email,name = name,password = passwd,role = "restaurant")
+            # new_MyAuthor.save()
+            new_manager = RestaurantManager.objects.create(email = email,name = name,password = passwd,role = "restaurant")
+            new_manager.save()
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+# class TempManagerRejection(mixins.DestroyModelMixin,generics.GenericAPIView,mixins.RetrieveModelMixin):
+#     serializer_class = TempManagerSerializer
+#     queryset = TempManager.objects.all()
+#     lookup_field = 'id'
+#     lookup_url_kwarg = 'pk'
+#     def get(self,request, *args, **kwargs):
+#         return self.retrieve(request, *args, **kwargs)
+
+#     # def get_object(self):
+#     #     return TempManager.objects.get
+#     def destroy(request, *args, **kwargs):
+#         instance = get_object_or_404(TempManager,email = request.data['email'])
+#         instance.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
+    serializer_class = TempManagerSerializer
+    queryset = TempManager.objects.all()
+    lookup_field = 'id'
+    lookup_url_kwarg = 'pk'
+    def get(self,request, *args, **kwargs):
+        pk = self.kwargs['pk']
+        if TempManager.objects.filter(id = pk).exists():
+            tmp = TempManager.objects.get(id = pk)
+            email = tmp.email
+            name = tmp.name
+            template = render_to_string('reject_admin.html', {'name': name})
+            data = {'to_email': email, 'body': template, 'subject': 'Your request for NoWaste has been rejected :('}
+            Util.send_email(data)
+            tmp.delete()
+        return Response("User rejected and email sent.", status=status.HTTP_200_OK)
+    # def get(self,request, *args, **kwargs):
+    #     return self.retrieve(request, *args, **kwargs)
+
+    # # def get_object(self):
+    # #     return TempManager.objects.get
+    # def destroy(request, *args, **kwargs):
+    #     instance = get_object_or_404(TempManager,email = request.data['email'])
+    #     instance.delete()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
+'''Accept by admin class'''   
+class AcceptByAdminView(APIView):
+    permission_classes = (permissions.AllowAny,)
+    def get(self,request):
+        tmp = TempManager.objects.first()
+        email = tmp.email
+        name = tmp.name
+        template = render_to_string('confirm_admin.html', {'name': name})
+        data = {'to_email': email, 'body': template, 'subject': 'Your request for NoWaste has been accepted :)'}
+        Util.send_email(data)
+        tmp.delete()
+        return Response("email sent.", status=status.HTTP_200_OK)
+    
+'''Reject by admin class'''   
+class RejectByAdminView(APIView):
+    permission_classes = (permissions.AllowAny,)
+    def get(self,request):
+        tmp = TempManager.objects.first()
+        email = tmp.email
+        name = tmp.name
+        template = render_to_string('reject_admin.html', {'name': name})
+        data = {'to_email': email, 'body': template, 'subject': 'Your request for NoWaste has been rejected :('}
+        Util.send_email(data)
+        tmp.delete()
+        return Response("email sent.", status=status.HTTP_200_OK)

@@ -247,3 +247,9 @@ class OrderSerializer2(serializers.ModelSerializer):
         data['restaurant'] = RestaurantSerializer(instance.restaurant).data
         data['items'] = OrderItemSerializer2(OrderItem2.objects.filter(order=instance), many=True).data
         return data
+    
+class TempManagerSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(validators=[])
+    class Meta:
+        model = TempManager
+        fields = ['email', 'name']
