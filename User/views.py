@@ -531,13 +531,27 @@ class TempManagerConfirmation(mixins.CreateModelMixin,generics.GenericAPIView):
     
 
 
-# class TempManagerRejection(mixins.DestroyModelMixin,generics.GenericAPIView,mixins.RetrieveModelMixin):
+# # class TempManagerRejection(mixins.DestroyModelMixin,generics.GenericAPIView,mixins.RetrieveModelMixin):
+# #     serializer_class = TempManagerSerializer
+# #     queryset = TempManager.objects.all()
+# #     lookup_field = 'id'
+# #     lookup_url_kwarg = 'pk'
+# #     def get(self,request, *args, **kwargs):
+# #         return self.retrieve(request, *args, **kwargs)
+
+# #     # def get_object(self):
+# #     #     return TempManager.objects.get
+# #     def destroy(request, *args, **kwargs):
+# #         instance = get_object_or_404(TempManager,email = request.data['email'])
+# #         instance.delete()
+# #         return Response(status=status.HTTP_204_NO_CONTENT)
+# class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
 #     serializer_class = TempManagerSerializer
 #     queryset = TempManager.objects.all()
 #     lookup_field = 'id'
 #     lookup_url_kwarg = 'pk'
-#     def get(self,request, *args, **kwargs):
-#         return self.retrieve(request, *args, **kwargs)
+#     # def get(self,request, *args, **kwargs):
+#     #     return self.retrieve(request, *args, **kwargs)
 
 #     # def get_object(self):
 #     #     return TempManager.objects.get
@@ -595,3 +609,7 @@ class RejectByAdminView(APIView):
         Util.send_email(data)
         tmp.delete()
         return Response("email sent.", status=status.HTTP_200_OK)
+
+class AdminProfile(generics.ListAPIView):
+    serializer_class = AdminPanelSerializer
+    queryset = MyAuthor.objects.all()
