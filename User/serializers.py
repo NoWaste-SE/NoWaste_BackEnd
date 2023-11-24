@@ -255,9 +255,14 @@ class TempManagerSerializer(serializers.ModelSerializer):
         fields =  ['email','name']
 
 class ManagerSerialzer(serializers.ModelSerializer):
+    
+    def get_restaurants(self,resmng):
+        return RestaurantSerializer(Restaurant.objects.filter(manager = resmng),many = True).data
+
+    restaurants = serializers.SerializerMethodField()
     class Meta : 
         model = RestaurantManager
-        fields = '__all__'
+        fields = ['name','email','number','manager_image','lat','lon','restaurants']
 
 class AdminPanelSerializer(serializers.ModelSerializer):
     def get_customers_data(self,MyAuthor):
@@ -279,3 +284,5 @@ class AdminPanelSerializer(serializers.ModelSerializer):
         model = MyAuthor
         fields = ['customers_data','Restaurnts_data','managers_data','tempManagers_data']
         # fields = ['customers_data','Restaurnts_data','managers_data']
+
+ 

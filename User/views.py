@@ -609,5 +609,5 @@ class RejectByAdminView(APIView):
         return Response("email sent.", status=status.HTTP_200_OK)
 
 class AdminProfile(generics.ListAPIView):
-    serializer_class = AdminPanelSerializer
-    queryset = MyAuthor.objects.all()
+    serializer_class = ManagerSerialzer
+    queryset = RestaurantManager.objects.all()
