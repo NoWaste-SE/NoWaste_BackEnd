@@ -13,7 +13,11 @@ services:
       - .:/app
       - static_volume:/app/static
       - media_volume:/app/media
-
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_USER=gen
+      - POSTGRES_PASSWORD=gen39nowaste
+      - POSTGRES_DB=nowaste
     depends_on:
       - db
     networks:
