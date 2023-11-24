@@ -6,9 +6,12 @@ services:
     container_name: backend
     # python manage.py loaddata user_data.json &&
     command: >
-      bash -c "python manage.py makemigrations &&
+      bash -c "
+              ./wait-for-it.sh db:5432 -- &&
+               python manage.py makemigrations &&
                python manage.py migrate &&
                gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
+    
     volumes:
       - .:/app
       - static_volume:/app/static
@@ -18,6 +21,8 @@ services:
       - POSTGRES_USER=gen
       - POSTGRES_PASSWORD=gen39nowaste
       - POSTGRES_DB=nowaste
+
+    
     depends_on:
       - db
     networks:
