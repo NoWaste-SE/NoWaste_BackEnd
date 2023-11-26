@@ -42,11 +42,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # - name: Run Tests
-      #   env:
-      #     DB: matrix.db
-      #     DB_HOST: 'localhost'
-      #     DB_PORT: ${{ matrix.db_port }}
-      #     DB_PASSWORD: gen39nowaste
-      #   run: |
-      #     python manage.py test
+      - name: Run Tests
+        env:
+          DB: ${{ matrix.db }}
+          DB_HOST: 'localhost'
+          DB_PORT: ${{ matrix.db_port }}
+          DB_PASSWORD: 1234
+        run: |
+          python manage.py test
