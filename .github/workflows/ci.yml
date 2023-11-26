@@ -30,7 +30,6 @@ jobs:
         python-version: '3.10'
     - name: Install Requirements
       run: |
-        cd NoWaste
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     # - name: Make env file
@@ -38,7 +37,7 @@ jobs:
     #     echo "${{ secrets.DEV_ENV_FILE }}" > ./.env.dev
     - name: Run Tests
       run: |
-            cd No
+            cd NoWaste
             python manage.py test
   
   # publish:
