@@ -45,7 +45,7 @@ jobs:
       - name: Run Tests
         env:
           DB: ${{ matrix.db }}
-          DB_HOST: 'localhost'
+          DB_HOST: 'db'
           DB_PORT: ${{ matrix.db_port }}
           DB_PASSWORD: 1234
         run: |
