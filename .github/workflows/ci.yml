@@ -47,6 +47,6 @@ jobs:
           DB: ${{ matrix.db }}
           DB_HOST: 'localhost'
           DB_PORT: ${{ matrix.db_port }}
-          DB_PASSWORD: 1234
+          DB_PASSWORD: gen39nowaste
         run: |
           python manage.py test
