@@ -17,21 +17,35 @@ import openpyxl
 import random , string
 import csv
 import json
+from django.urls import reverse
 from cities_light.models import Country, City
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenVerifyView,TokenObtainPairView,TokenRefreshView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 '''Email Verification class for signing up'''
-class VerifyEmail(APIView):
-    def get_serializer_class(self, request):
-        if request.data['role'] == "customer":
+class VerifyEmail(TokenObtainPairView):
+    def get_serializer_class(self):
+        if self.request.data['role'] == "customer":
             return CreateCustomerSerializer
-        elif request.data['role'] == "restaurant":
+        elif self.request.data['role'] == "restaurant":
             return CreateRestaurantSerializer
     
-    def post(self, request):
-        serializer_class = self.get_serializer_class(request)
+    def post(self, request, *args, **kwargs):
+        # req2 = {'email': request.data['email'], 'password': request.data['password']}
+        # request_login = "/user/login/"
+        print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(request.data)
+        response = super().post(
+            reverse("login"),
+            {
+                "email": request.data['email'],
+                "password": request.data['password'],
+            },
+        )
+        access_token = response.data['access']
+        refresh_token = response.data['refresh']
+        serializer_class = self.get_serializer_class()
         serializer = serializer_class(data=request.data)
         if serializer.is_valid():
             user_data = serializer.validated_data
@@ -46,6 +60,12 @@ class VerifyEmail(APIView):
                     myauthor = MyAuthor.objects.get(email = user_data['email'])
                     myauthor.role = user_data['role']
                     myauthor.save()
+                    user_data['id'] = myauthor.id
+                    access_token = response.data['access']
+                    refresh_token = response.data['refresh']
+                    if response.status_code == 200:
+                        user_data['access_token']= access_token
+                        user_data['refresh_token']=refresh_token
                     return Response(user_data, status=status.HTTP_201_CREATED)
                 if user_data['role']=="restaurant":
                     if TempManager.objects.filter(email=user_data['email']).exists():
@@ -87,6 +107,8 @@ class SignUpView(APIView):
 '''Login API view'''   
 class LoginView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
+        print("|||||||||||||||||||||||||||||||||||||||||||||||||||")
+        print(request)
         response = super().post(request, *args, **kwargs)
         access_token = response.data['access']
         refresh_token = response.data['refresh']
