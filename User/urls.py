@@ -29,8 +29,8 @@ urlpatterns = [
     path('all_customers/', GetCustomers.as_view(), name='all_customers'),
     # path('temp-manager/',TempManagerConfirmation.as_view(),name='add-delete-tmpMng'),
     path('temp-manager-confirm/',TempManagerConfirmation.as_view(),name='confirm-tmpMng'),
-    # path('temp-manager-reject/<int:pk>/',TempManagerRejection.as_view(),name='reject-tmpMng'),
-    path('accept/', AcceptByAdminView.as_view(), name='accept'),
-    path('reject/', RejectByAdminView.as_view(), name='reject'),
+    path('temp-manager-reject/<int:pk>/',TempManagerRejection.as_view(),name='reject-tmpMng'),
+    # path('accept/', AcceptByAdminView.as_view(), name='accept'),
+    # path('reject/', RejectByAdminView.as_view(), name='reject'),
     path('admin-profile/', AdminProfile.as_view(), name='admin-profile'),
 ]
