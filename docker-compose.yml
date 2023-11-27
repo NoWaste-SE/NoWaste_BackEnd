@@ -22,6 +22,9 @@ services:
       - POSTGRES_PASSWORD=gen39nowaste
       - POSTGRES_DB=nowaste
 
+    env_file:
+      - ./NoWaste/NoWaste/.deploy.env
+
     
     depends_on:
       - db

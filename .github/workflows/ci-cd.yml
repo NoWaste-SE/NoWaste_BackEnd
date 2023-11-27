@@ -1,0 +1,96 @@
+name: Quality Assurance
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main"]
+  workflow_dispatch:
+
+jobs:
+  quality-assurance:
+    name: Quality Assurance
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        db: [postgres]
+        python-version: [3.10.12]
+        include:
+          - db: postgres
+            db_port: 5432
+
+    services:
+      db:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: nowaste
+          POSTGRES_USER: gen
+          POSTGRES_PASSWORD: gen39nowaste
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Tests
+        env:
+          DB: ${{ matrix.db }}
+          DB_HOST: 'localhost'
+          DB_PORT: ${{ matrix.db_port }}
+          DB_PASSWORD: gen39nowaste
+        run: |
+          python manage.py test
+  deploy:
+    needs: quality-assurance
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - 
+        name: remote ssh
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: gen39Nowaste
+          port: 22
+
+          script: |
+            cd Nowaste_BackEnd/
+            git pull origin main
+            sudo docker compose down
+            sudo docker compose up -d --build
+
+          # run: |
+          #  ssh -v target "cd Nowaste_BackEnd && git pull origin main && sudo docker compose down && sudo docker image prune -a -f  && sudo docker compose up -d --build"
+      # - name: Configure SSH
+      #   env:
+      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     SSH_HOST: ${{ secrets.SSH_HOST }}
+      #     SSH_USER: ${{ secrets.SSH_USER }}
+      #   run: |
+      #     mkdir -p ~/.ssh/
+      #     echo "$SSH_PRIVATE_KEY" > ~/.ssh/github
+      #     chmod 600 ~/.ssh/github
+      #     cat >>~/.ssh/config <<END
+      #     Host target
+      #       HostName $SSH_HOST
+      #       User $SSH_USER
+      #       IdentityFile ~/.ssh/github
+      #       LogLevel ERROR
+      #       StrictHostKeyChecking no
+      #     END
+      # - name: Run deploy
+      #   run: |
+      #     ssh -v target "cd Nowaste_BackEnd && git pull origin main && sudo docker compose down && sudo docker image prune -a -f  && sudo docker compose up -d --build"
