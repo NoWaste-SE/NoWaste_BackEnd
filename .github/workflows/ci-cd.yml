@@ -63,14 +63,13 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: gen39Nowaste
           port: 22
 
           script: |
-            cd Nowaste_BackEnd
+            cd Nowaste_BackEnd/
             git pull origin main
             sudo docker compose down
-            sudo docker image prune -a -f
             sudo docker compose up -d --build
 
           # run: |
