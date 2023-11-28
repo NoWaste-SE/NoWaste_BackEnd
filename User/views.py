@@ -57,6 +57,7 @@ class VerifyEmail(TokenObtainPairView):
                     refresh_token = str(refresh)
 
                     user_data['id'] = myauthor.id
+                    user_data['list_of_favorites_res'] = []
                     user_data['access_token'] = access_token
                     user_data['refresh_token'] = refresh_token
                     return Response(user_data, status=status.HTTP_201_CREATED)
