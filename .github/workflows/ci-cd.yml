@@ -63,8 +63,8 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          password: gen39Nowaste
-          port: 22
+          password: ${{ secrets.SSH_PASS }}
+          port: ${{ secrets.SSH_PORT }}
 
           script: |
             cd Nowaste_BackEnd/
