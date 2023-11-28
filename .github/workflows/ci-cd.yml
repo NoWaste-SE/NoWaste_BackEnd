@@ -67,7 +67,7 @@ jobs:
           port: 22
 
           script: |
-            cd Nowaste_BackEnd/
+            cd /home/ubuntu/NoWaste_BackEnd
             git pull origin main
             sudo docker compose down
             sudo docker compose up -d --build
