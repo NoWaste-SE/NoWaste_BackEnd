@@ -41,7 +41,7 @@ urlpatterns = [
     path('test', test, name='test'),
     path('excel/manager/<int:manager_id>/order-history/',OrderHistoryManagerExportExcel.as_view(),name='csv-order-history-manager'),
     path('excel/customer/<int:restaurant_id>/<int:userId>/order-history/',OrderHistoryCustomerExportExcel.as_view(),name='csv-order-history-customer'),
-    path('excel/customer/<int:userId>/order-history/',OrderHistoryDiffRestaurantCustomerExportExcel.as_view(),name='csv-order-history-customer'),
+    path('excel/customer/<int:userId>/order-history/',OrderHistoryDiffRestaurantCustomerExportExcel.as_view(),name='csv-diff-order-history-customer'),
 
 ]
 
