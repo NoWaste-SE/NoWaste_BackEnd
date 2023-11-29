@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import status ,generics , permissions , mixins,viewsets
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from .serializers import *
 from .models import *
 from .utils import Util
@@ -111,7 +111,9 @@ class LoginView(TokenObtainPairView):
                         result_fav.append({'address': res.address, 'name': res.name, 'restaurant_image': res.restaurant_image, 'discount': res.discount, 'number': res.number, 'rate': res.rate, 'date_of_establishment': res.date_of_establishment, 'description': res.description, 'id': res.id})
                     # listOfFavorite = list(c.list_of_favorites_res)
                     return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'wallet_balance':WalletBalance, 'role':user.role, 'list_of_favorites_res':result_fav, 'name':name})
-                else:
+                elif user.role == "admin" and user.IsAdminUser :
+                    return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'role':user.role})
+                else :
                     r = RestaurantManager.objects.get(email = email)
                     return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'role':user.role, 'name':r.name})
             else:
@@ -508,7 +510,7 @@ class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
             tmp.delete()
         return Response("User rejected and email sent.", status=status.HTTP_200_OK)
 
-
 class AdminProfile(generics.ListAPIView):
     serializer_class = ManagerSerialzer
     queryset = RestaurantManager.objects.all()
+    perssoin_classes = [IsAdminUser,JWTAuthentication]
