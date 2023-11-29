@@ -9,7 +9,7 @@ from django.utils.html import format_html
 class UserAdmin(BaseUserAdmin):
     # Use the email field as the username field in the admin interface
     ordering = ['email']
-    list_display = ['email', 'is_staff','Role']
+    list_display = ['email', 'is_staff','Role', 'id']
     def Role(self, obj):
         if obj.role == "customer":
             
