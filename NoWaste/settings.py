@@ -100,19 +100,19 @@ ASGI_APPLICATION = "NoWaste.asgi.application"
 
 DATABASES = {
     'default': {
-        # 'ENGINE': 'django.db.backends.postgresql',
-        # 'NAME': env.str('DB_NAME'),
-        # 'USER': env.str('DB_USER'),    
-        # 'PASSWORD': env.str('DB_PASSWORD'),  
-        # 'HOST': env.str('DB_HOST'), 
-        # 'PORT': '5432',  
-        
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'gen39nowaste',
-        'HOST': 'localhost', 
-        'PORT': '5432',
+        'NAME': env.str('DB_NAME'),
+        'USER': env.str('DB_USER'),    
+        'PASSWORD': env.str('DB_PASSWORD'),  
+        'HOST': env.str('DB_HOST'), 
+        'PORT': '5432',  
+        
+        # 'ENGINE': 'django.db.backends.postgresql',
+        # 'NAME': 'postgres',
+        # 'USER': 'postgres',
+        # 'PASSWORD': 'gen39nowaste',
+        # 'HOST': 'localhost', 
+        # 'PORT': '5432',
     }
 }
 # DATABASES = {
