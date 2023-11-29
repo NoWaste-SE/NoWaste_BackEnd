@@ -58,11 +58,11 @@ class Comment(models.Model):
         return str(self.writer.name) + " "+  str(self.restaurant.name)
 
 class OrderManager(models.Manager):
-    def get_initiated_order(self, customer, restaurant):
+    def get_InProgress_order(self, customer, restaurant):
         order, created = self.get_or_create(
             customer=customer,
             restaurant=restaurant,
-            status='initiated'
+            status='InProgress'
         )
         return order
 
@@ -71,11 +71,10 @@ class Order2(models.Model):
     objects = OrderManager()
     
     ORDER_STATUS_CHOICES = (
-        ('initiated', 'Initiated'),
-        ('pending', 'Pending'),
-        ('accepted', 'Accepted'),
-        ('rejected', 'Rejected'),
-        ('delivered', 'Delivered'),
+        ("InProgress", "InProgress"), 
+        ("Completed", "Completed"), 
+        ("Cancled", "Cancled"), 
+        ("notOrdered","notOrdered"),
     )
 
     status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='pending')
@@ -96,31 +95,38 @@ class Order2(models.Model):
         items = OrderItem2.objects.filter(order=self)
         return sum([item.total_price for item in items]) * (1 - self.restaurant.discount)
     
-    def update_items(self, item, quantity):
+    def update_items(self, item, action="plus"):
         order_item, created = OrderItem2.objects.get_or_create(
             order=self,
             item=item,
-            defaults={'quantity': quantity}
         )
 
         if not created:
-            if quantity == 0:
-                order_item.delete()
-            order_item.quantity = quantity
-            order_item.save()
+            if action == "plus":
+                order_item.quantity += 1
+                order_item.item.remainder -= 1
+            elif action == "minus":
+                order_item.quantity -= 1
+                order_item.item.remainder += 1
+                
+        order_item.save()
+        order_item.item.save()
+        
+        if order_item.quantity <= 0:
+            order_item.delete()
         
         return order_item
             
     def clean(self):
-        # Check if there is an existing order for this restaurant with status 'initiated' for this customer
+        # Check if there is an existing order for this restaurant with status 'InProgress' for this customer
         existing_orders = Order2.objects.filter(
             customer=self.customer,
             restaurant=self.restaurant,
-            status='initiated'
+            status='InProgress'
         )
 
         if existing_orders.exists():
-            raise ValidationError("You already have an existing order for this restaurant with status 'initiated'")
+            raise ValidationError("You already have an existing order for this restaurant with status 'InProgress'")
 
 
     

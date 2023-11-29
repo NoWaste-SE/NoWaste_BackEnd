@@ -207,24 +207,37 @@ class LatLongSerializer(serializers.ModelSerializer):
         
         
 class OrderItemSerializer2(serializers.ModelSerializer):
-    quantity = serializers.IntegerField(default=1, min_value=1)
+    action = serializers.ChoiceField(choices=['plus', 'minus'], default='plus')
     
     class Meta:
         model = OrderItem2
-        fields = ['quantity', 'item']
+        fields = ['action', 'item', 'order']
         read_only_fields = ['order']
         
-    def create(self, validated_data):
-        item = validated_data.get('item')
-        quantity = validated_data.get('quantity')
+    def validate(self, attrs):
+        action = attrs.get('action')
+        item = attrs.get('item')
         user = self.context['request'].user
         customer = Customer.objects.get(myauthor_ptr_id=user.id)
         restaurant = Food.objects.filter(id=item.id).first().restaurant
-        order_item = Order2.objects.get_initiated_order(customer, restaurant).update_items(item, quantity)
+        if action == 'minus' and not OrderItem2.objects.filter(order=Order2.objects.get_InProgress_order(customer, restaurant), item=item).exists():
+            raise serializers.ValidationError('You have no such item in your order')
+        if action == 'plus' and Food.objects.get(id=item.id).remainder <= 0:
+            raise serializers.ValidationError('This item is not available now')
+        return attrs
+        
+    def create(self, validated_data):
+        item = validated_data.get('item')
+        action = validated_data.get('action')
+        user = self.context['request'].user
+        customer = Customer.objects.get(myauthor_ptr_id=user.id)
+        restaurant = Food.objects.filter(id=item.id).first().restaurant
+        order_item = Order2.objects.get_InProgress_order(customer, restaurant).update_items(item, action)
         return order_item
     
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        data['quantity'] = instance.quantity
         data['total_price'] = instance.total_price
         data['total_price_after_discount'] = instance.total_price_after_discount
         data['item'] = FoodSerializer(instance.item).data
