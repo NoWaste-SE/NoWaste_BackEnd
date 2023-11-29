@@ -468,3 +468,4 @@ class GetCustomers(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response({'detail': 'user does not have admin permissions!'}, status=status.HTTP_401_UNAUTHORIZED)
+        

@@ -8,7 +8,6 @@ from rest_framework import status
 from rest_framework.test import APIClient,APITestCase
 from User.models import MyAuthor,VC_Codes
 from .serializers import ForgotPasswordSerializer
-from rest_framework.test import APITestCase, APIRequestFactory
 from User.views import OrderViewSet2
 from User.models import MyAuthor
 from .models import *
@@ -297,11 +296,7 @@ class ForgotPassSetNewPassTests(TestCase):
 #         self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")
 #         response = self.client.post(self.url, {})
 #         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-'''Implement LoginViewTest'''
-class LoginViewTestCase(APITestCase):
-    def setUp(self):
-        self.url = reverse('login')
+class LoginClassTestCase(APITestCase):
     
     def athenticate(self, email, passw, name, role):
         # SignUp
@@ -339,10 +334,17 @@ class LoginViewTestCase(APITestCase):
         
         # Get Token
         token = response.data['access_token']
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        # self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        return token
+
+'''Implement LoginViewTest'''
+class LoginViewTestCase(LoginClassTestCase):
+    def setUp(self):
+        self.url = reverse('login')
     
     def test_login_checkAuthentication(self):
-        self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")       
+        token = self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")       
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
@@ -393,3 +395,13 @@ class RestaurantInfoExportExcelTestCase(TestCase):
                          self.restaurant.discount, self.restaurant.rate, self.restaurant.number,
                          self.restaurant.manager.name, self.restaurant.manager.email]
         self.assertEqual(cell_values, expected_data)
+
+class AdminViewTestCase(APITestCase):
+    def setUp(self):
+        self.url = reverse('login')
+    
+    def test_login_checkAuthentication(self):
+        token = self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")       
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
