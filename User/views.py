@@ -17,49 +17,71 @@ import openpyxl
 import random , string
 import csv
 import json
+from django.urls import reverse
 from cities_light.models import Country, City
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenVerifyView,TokenObtainPairView,TokenRefreshView
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
+# from django.test import TestCase
+# from rest_framework.test import APITestCase, APIRequestFactory
 
 '''Email Verification class for signing up'''
-class VerifyEmail(APIView):
-    def get_serializer_class(self, request):
-        if request.data['role'] == "customer":
+class VerifyEmail(TokenObtainPairView):
+    def get_serializer_class(self):
+        if self.request.data['role'] == "customer":
             return CreateCustomerSerializer
-        elif request.data['role'] == "restaurant":
+        elif self.request.data['role'] == "restaurant":
             return CreateRestaurantSerializer
     
-    def post(self, request):
-        serializer_class = self.get_serializer_class(request)
+    def post(self, request, *args, **kwargs):
+        serializer_class = self.get_serializer_class()
         serializer = serializer_class(data=request.data)
         if serializer.is_valid():
             user_data = serializer.validated_data
             try:
                 user = VC_Codes.objects.get(email=user_data['email'])
             except VC_Codes.DoesNotExist:
-                return Response("There is not any user with the given email" , status=status.HTTP_404_NOT_FOUND)
+                return Response("There is not any user with the given email", status=status.HTTP_404_NOT_FOUND)
             if user_data['code'] == user.vc_code:
-                VC_Codes.objects.filter(vc_code = user.vc_code).delete()   
+                VC_Codes.objects.filter(vc_code=user.vc_code).delete()   
                 if user_data['role'] == "customer":
                     serializer.save()
-                    myauthor = MyAuthor.objects.get(email = user_data['email'])
+                    myauthor = MyAuthor.objects.get(email=user_data['email'])
                     myauthor.role = user_data['role']
                     myauthor.save()
+                    refresh = RefreshToken.for_user(myauthor)
+                    access_token = str(refresh.access_token)
+                    refresh_token = str(refresh)
+                    user_data['id'] = myauthor.id
+                    user_data['list_of_favorites_res'] = []
+                    user_data['access_token'] = access_token
+                    user_data['refresh_token'] = refresh_token
                     return Response(user_data, status=status.HTTP_201_CREATED)
-                if user_data['role']=="restaurant":
+                if user_data['role'] == "restaurant":
                     if TempManager.objects.filter(email=user_data['email']).exists():
                         return Response("You are already waiting for admin approval", status=status.HTTP_400_BAD_REQUEST)
+                    
                     tmp = TempManager.objects.create(email=user_data['email'], name=user_data['name'])
                     tmp.set_password(user_data['password'])
                     tmp.save()
-                    return Response("Please wait for admin confirmation.", status=status.HTTP_200_OK)
 
-        return Response("verification code is wrong", status=status.HTTP_400_BAD_REQUEST)
+                    # Generate access and refresh tokens
+                    refresh = RefreshToken.for_user(tmp)
+                    access_token = str(refresh.access_token)
+                    refresh_token = str(refresh)
+
+                    return Response({
+                        "message": "Please wait for admin confirmation.",
+                        "access_token": access_token,
+                        "refresh_token": refresh_token
+                    }, status=status.HTTP_200_OK)
+
+        return Response("Verification code is wrong", status=status.HTTP_400_BAD_REQUEST)
+
     def get(self, request):
         serializer = BaseCreateUserSerializer()
         return Response(serializer.data)
-    
 '''SignUp class'''   
 class SignUpView(APIView):
     serializer_class = SignUpSerializer
@@ -428,6 +450,7 @@ class RestaurantInfoExportExcel(APIView):
         return response
 
 class OrderViewSet2(viewsets.ModelViewSet):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer2
     
@@ -437,6 +460,7 @@ class OrderViewSet2(viewsets.ModelViewSet):
         return Order2.objects.filter(customer=customer)
 
 class OrderItemViewSet2(viewsets.ModelViewSet):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = OrderItemSerializer2
     

@@ -339,3 +339,4 @@ class RestaurantInfoExportExcelTestCase(TestCase):
                          self.restaurant.discount, self.restaurant.rate, self.restaurant.number,
                          self.restaurant.manager.name, self.restaurant.manager.email]
         self.assertEqual(cell_values, expected_data)
+

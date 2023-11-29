@@ -10,9 +10,11 @@ RUN pip install gunicorn
 # Install system dependencies necessary for psycopg2
 RUN apt-get update && apt-get install -y libpq-dev gcc
 
+RUN apt-get install -y --no-install-recommends coreutils
+
 COPY ./requirements.txt .
 
-RUN pip install -r requirements.txt
+RUN timeout 300 pip install -r requirements.txt
 
 COPY . /app/
 
