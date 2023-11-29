@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import status ,generics , permissions , mixins,viewsets
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from .serializers import *
 from .models import *
 from .utils import Util
@@ -133,7 +133,9 @@ class LoginView(TokenObtainPairView):
                         result_fav.append({'address': res.address, 'name': res.name, 'restaurant_image': res.restaurant_image, 'discount': res.discount, 'number': res.number, 'rate': res.rate, 'date_of_establishment': res.date_of_establishment, 'description': res.description, 'id': res.id})
                     # listOfFavorite = list(c.list_of_favorites_res)
                     return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'wallet_balance':WalletBalance, 'role':user.role, 'list_of_favorites_res':result_fav, 'name':name})
-                else:
+                elif user.role == "admin" and user.IsAdminUser :
+                    return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'role':user.role})
+                else :
                     r = RestaurantManager.objects.get(email = email)
                     return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'role':user.role, 'name':r.name})
             else:
@@ -487,47 +489,9 @@ class GetCustomers(APIView):
         else:
             return Response({'detail': 'user does not have admin permissions!'}, status=status.HTTP_401_UNAUTHORIZED)
 
-# class TempManagerConfirmation(mixins.CreateModelMixin,mixins.DestroyModelMixin,generics.GenericAPIView):
-#     serializer_class = TempManagerSerializer
-#     # lookup_field = 'id'
-#     def get_serializer_class(self):
-#         if self.request.method == "POST":
-#             return MyAuthorSerializer
-#         elif self.request.method == "DELETE":
-#             return TempManager.objects.all()
-#         return TempManager.objects.all()
-        
-#     def get_queryset(self):
-#         if self.request.method == "POST":
-#             return MyAuthor.objects.all()
-#         elif self.request.method == "DELETE":
-#             return TempManager.objects.all()
-#         return TempManager.objects.all()
-    
-#     def get_object(self):
-#         queryset = self.get_queryset()
-#         obj = queryset.filter(id = self.request.user.id)
-#         self.check_object_permissions(self.request, obj)
-#         return obj
-    
-#     def post(self,request,*args, **kwargs):
-#         return self.create(request,*args,**kwargs)
-    
-#     def delete(self,request,*args, **kwargs):
-#         return self.destroy(request, *args, **kwargs)
-
-
-# def accept_tempMNG(request,*args, **kwargs):
-#     print()
 
 class TempManagerConfirmation(mixins.CreateModelMixin,generics.GenericAPIView):
     serializer_class = TempManagerSerializer
-    # def get_serializer_class(self):
-    #     if self.request.method == "POST":
-    #         return MyAuthorSerializer
-    #     elif self.request.method == "DELETE":
-    #         return TempManager.objects.all()
-    #     return TempManager.objects.all()
     
     def post(self,request,*args, **kwargs):
         serializer = TempManagerSerializer(data = request.data)
@@ -553,34 +517,6 @@ class TempManagerConfirmation(mixins.CreateModelMixin,generics.GenericAPIView):
     
 
 
-# # class TempManagerRejection(mixins.DestroyModelMixin,generics.GenericAPIView,mixins.RetrieveModelMixin):
-# #     serializer_class = TempManagerSerializer
-# #     queryset = TempManager.objects.all()
-# #     lookup_field = 'id'
-# #     lookup_url_kwarg = 'pk'
-# #     def get(self,request, *args, **kwargs):
-# #         return self.retrieve(request, *args, **kwargs)
-
-# #     # def get_object(self):
-# #     #     return TempManager.objects.get
-# #     def destroy(request, *args, **kwargs):
-# #         instance = get_object_or_404(TempManager,email = request.data['email'])
-# #         instance.delete()
-# #         return Response(status=status.HTTP_204_NO_CONTENT)
-# class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
-#     serializer_class = TempManagerSerializer
-#     queryset = TempManager.objects.all()
-#     lookup_field = 'id'
-#     lookup_url_kwarg = 'pk'
-#     # def get(self,request, *args, **kwargs):
-#     #     return self.retrieve(request, *args, **kwargs)
-
-#     # def get_object(self):
-#     #     return TempManager.objects.get
-#     def destroy(request, *args, **kwargs):
-#         instance = get_object_or_404(TempManager,email = request.data['email'])
-#         instance.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
 class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
     serializer_class = TempManagerSerializer
     queryset = TempManager.objects.all()
@@ -597,18 +533,8 @@ class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
             Util.send_email(data)
             tmp.delete()
         return Response("User rejected and email sent.", status=status.HTTP_200_OK)
-    # def get(self,request, *args, **kwargs):
-    #     return self.retrieve(request, *args, **kwargs)
-
-    # # def get_object(self):
-    # #     return TempManager.objects.get
-    # def destroy(request, *args, **kwargs):
-    #     instance = get_object_or_404(TempManager,email = request.data['email'])
-    #     instance.delete()
-    #     return Response(status=status.HTTP_204_NO_CONTENT)
-
-
 
 class AdminProfile(generics.ListAPIView):
     serializer_class = ManagerSerialzer
     queryset = RestaurantManager.objects.all()
+    perssoin_classes = [IsAdminUser,JWTAuthentication]
