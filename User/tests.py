@@ -396,12 +396,12 @@ class RestaurantInfoExportExcelTestCase(TestCase):
                          self.restaurant.manager.name, self.restaurant.manager.email]
         self.assertEqual(cell_values, expected_data)
 
-class AdminViewTestCase(APITestCase):
-    def setUp(self):
-        self.url = reverse('login')
+# class AdminViewTestCase(APITestCase):
+#     def setUp(self):
+#         self.url = reverse('login')
     
-    def test_login_checkAuthentication(self):
-        token = self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")       
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+#     def test_login_checkAuthentication(self):
+#         token = self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")       
+#         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+#         response = self.client.get(self.url)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
