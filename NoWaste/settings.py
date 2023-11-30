@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
-# from environs import Env
+from environs import Env
 
 # Environment Variables
 env = Env()
@@ -108,8 +108,8 @@ DATABASES = {
         'PORT': '5432',  
         
         # 'ENGINE': 'django.db.backends.postgresql',
-        # 'NAME': 'postgres',
-        # 'USER': 'postgres',
+        # 'NAME': 'nowaste',
+        # 'USER': 'gen',
         # 'PASSWORD': 'gen39nowaste',
         # 'HOST': 'localhost', 
         # 'PORT': '5432',
