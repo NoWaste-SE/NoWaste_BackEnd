@@ -252,7 +252,7 @@ class TempManagerSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(validators=[])
     class Meta:
         model = TempManager
-        fields =  ['email','name']
+        fields =  ['email','name','id']
 
 class ManagerSerialzer(serializers.ModelSerializer):
     
