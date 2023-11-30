@@ -236,13 +236,10 @@ class LatLongSerializer(serializers.ModelSerializer):
 class RecentlyViewedRestaurantSerializer(serializers.ModelSerializer):
     def get_viewed_at(self, recently_view):
         return str(recently_view.viewed_at)[:19]
-    def get_user(self, recently_view ):
-        return str(recently_view.user.name)
     def get_restaurant(self, recently_view ):
-        return str(recently_view.restaurant.name)
-    user = serializers.SerializerMethodField(read_only=True)
+        return RestaurantSerializer(recently_view.restaurant).data
     restaurant = serializers.SerializerMethodField(read_only=True)
     viewed_at = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = RecentlyViewedRestaurant
-        fields = ['user','restaurant', 'viewed_at']
+        fields = ['viewed_at','restaurant']
