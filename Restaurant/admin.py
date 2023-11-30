@@ -36,5 +36,6 @@ admin.site.register(Comment, CommentAdmin)
 
 admin.site.register(Order2)
 admin.site.register(OrderItem2)
+admin.site.register(RecentlyViewedRestaurant)
 # admin.site.register(OrderManager)
 # admin.site.register(OrderItemManager)

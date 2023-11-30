@@ -25,6 +25,14 @@ import urllib
 from rest_framework.renderers import JSONRenderer
 from django.core import serializers
 
+def GetUserByToken(request):
+    authentication = JWTAuthentication()
+    try:
+        user, _ = authentication.authenticate(request)
+    except Exception:
+        user = None
+    return user
+
 '''class for Change Password API'''
 class ChangePasswordView(generics.UpdateAPIView):
     authentication_classes = [JWTAuthentication]
@@ -94,6 +102,21 @@ class RestaurantCustomerView(mixins.ListModelMixin,mixins.RetrieveModelMixin,vie
     # here we use specific serializer which show selected fields about restaurant 
     serializer_class = RestaurantSerializer
     lookup_field = 'id'
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def retrieve(self, request, id=None):
+        user = GetUserByToken(request)
+        queryset = Restaurant.objects.get(id=id)
+        serializer = self.serializer_class(queryset)
+        try:
+            customer = Customer.objects.get(id=user.id)
+            if RecentlyViewedRestaurant.objects.filter(user=customer, restaurant=queryset).exists():
+                r = RecentlyViewedRestaurant.objects.get(user=customer, restaurant=queryset)
+                r.delete()
+            recently_view = RecentlyViewedRestaurant.objects.create(user=customer, restaurant=queryset)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response("User is not customer!", status=status.HTTP_400_BAD_REQUEST)
 
 '''class for Food APIs'''
 class FoodViewSet(ModelViewSet):
@@ -624,4 +647,17 @@ class OrderHistoryDiffRestaurantCustomerExportExcel(APIView):
         return response
 
 
-    
+class RecentlyViewedRestaurantsCusotmerView(APIView):
+    queryset = RecentlyViewedRestaurant.objects.all()
+    serializer_class = RecentlyViewedRestaurantSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = GetUserByToken(request)
+        try:
+            customer = Customer.objects.get(id=user.id)
+            recently_views = RecentlyViewedRestaurant.objects.filter(user=customer).order_by('-viewed_at')[:6]
+            serializer = self.serializer_class(recently_views, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response("Error!", status=status.HTTP_400_BAD_REQUEST)
