@@ -656,7 +656,7 @@ class RecentlyViewedRestaurantsCusotmerView(APIView):
         user = GetUserByToken(request)
         try:
             customer = Customer.objects.get(id=user.id)
-            recently_views = RecentlyViewedRestaurant.objects.filter(user=customer).order_by('-viewed_at')
+            recently_views = RecentlyViewedRestaurant.objects.filter(user=customer).order_by('-viewed_at')[:6]
             serializer = self.serializer_class(recently_views, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
