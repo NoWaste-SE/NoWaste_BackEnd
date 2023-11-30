@@ -534,7 +534,18 @@ class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
             tmp.delete()
         return Response("User rejected and email sent.", status=status.HTTP_200_OK)
 
-class AdminProfile(generics.ListAPIView):
-    serializer_class = ManagerSerialzer
-    queryset = RestaurantManager.objects.all()
-    perssoin_classes = [IsAdminUser,JWTAuthentication]
+class AdminProfile(APIView):
+    def get(self, request, *args, **kwargs):
+        # Assuming you have a model named YourModel
+
+        # Serialize data using two different serializers
+        Managers = ManagerSerialzer(RestaurantManager.objects.all(), many=True)
+        Requests = TempManagerSerializer(TempManager.objects.all(), many=True)
+
+        # Combine serialized data
+        combined_data = {
+            'Managers': Managers.data,
+            'Requests': Requests.data,
+        }
+
+        return Response(combined_data, status=status.HTTP_200_OK)
