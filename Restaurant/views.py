@@ -110,6 +110,9 @@ class RestaurantCustomerView(mixins.ListModelMixin,mixins.RetrieveModelMixin,vie
         serializer = self.serializer_class(queryset)
         try:
             customer = Customer.objects.get(id=user.id)
+            if RecentlyViewedRestaurant.objects.filter(user=customer, restaurant=queryset).exists():
+                r = RecentlyViewedRestaurant.objects.get(user=customer, restaurant=queryset)
+                r.delete()
             recently_view = RecentlyViewedRestaurant.objects.create(user=customer, restaurant=queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
