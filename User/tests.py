@@ -18,6 +18,50 @@ import openpyxl
 from django.core.files.base import ContentFile
 
 
+class LoginClassTestCase(APITestCase):
+    def signup(self,email,name):
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "name": name,
+                "email": email,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    
+    def verify_email(self,name,passw,role,email):    
+        # Verify Email
+        response = self.client.post(
+            reverse("verify-email"),
+            {
+                "name": name,
+                "password": passw,
+                "role": role,
+                "email": email,
+                "code": VC_Codes.objects.get(email=email).vc_code,
+            }
+        )      
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Login
+    def login(self,email,passw):
+        response = self.client.post(
+            reverse("login"),
+            {
+                "email": email,
+                "password": passw,
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)        
+        # Get Token
+        token = response.data['access_token']
+        # self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        return token
+    def signup_verifyEmail_login(self,email,passw,name,role):
+        self.signup(email,name)
+        self.verify_email(name,passw,role,email)
+        token = self.login(email,passw)
+        return token
 class ForgotPasswordViewSetTests(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -296,46 +340,7 @@ class ForgotPassSetNewPassTests(TestCase):
 #         self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")
 #         response = self.client.post(self.url, {})
 #         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-class LoginClassTestCase(APITestCase):
-    
-    def athenticate(self, email, passw, name, role):
-        # SignUp
-        response = self.client.post(
-            reverse("signup"),
-            {
-                "name": name,
-                "email": email,
-            }
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
-        # Verify Email
-        response = self.client.post(
-            reverse("verify-email"),
-            {
-                "name": name,
-                "password": passw,
-                "role": role,
-                "email": email,
-                "code": VC_Codes.objects.get(email=email).vc_code,
-            }
-        )      
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
-        # Login
-        response = self.client.post(
-            reverse("login"),
-            {
-                "email": email,
-                "password": passw,
-            },
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
-        # Get Token
-        token = response.data['access_token']
-        # self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        return token
+
 
 '''Implement LoginViewTest'''
 class LoginViewTestCase(LoginClassTestCase):
@@ -343,13 +348,13 @@ class LoginViewTestCase(LoginClassTestCase):
         self.url = reverse('login')
     
     def test_login_checkAuthentication(self):
-        token = self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")       
+        token = self.signup_verifyEmail_login("test_email@gmail.com", "test_pass", "test_name", "customer")       
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_login_method_notAllowed(self):
-        self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")
+        self.signup_verifyEmail_login("test_email@gmail.com", "test_pass", "test_name", "customer")
         response = self.client.delete(self.url, {
                                                     "password": "test_pass",
                                                         "email": "test_email@gmail.com"
@@ -396,12 +401,23 @@ class RestaurantInfoExportExcelTestCase(TestCase):
                          self.restaurant.manager.name, self.restaurant.manager.email]
         self.assertEqual(cell_values, expected_data)
 
-# class AdminViewTestCase(APITestCase):
-#     def setUp(self):
-#         self.url = reverse('login')
+class AdminViewTestCase(LoginClassTestCase):
+    def setUp(self):
+        self.url = reverse('admin-profile')
     
-#     def test_login_checkAuthentication(self):
-#         token = self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")       
-#         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-#         response = self.client.get(self.url)
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_adminPanel_checkAuthorization(self):
+        token = self.signup_verifyEmail_login("test_email@gmail.com", "test_pass", "test_name", "customer")       
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_adminPanel_method_notAllowed(self):
+        # self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")
+        token = self.login("admin@gmail.com", "1234")
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = self.client.delete(self.url, {
+                                                    "password": "test_pass",
+                                                        "email": "test_email@gmail.com"
+                                                    })
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+

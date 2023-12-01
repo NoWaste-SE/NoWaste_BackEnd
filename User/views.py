@@ -535,6 +535,9 @@ class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
         return Response("User rejected and email sent.", status=status.HTTP_200_OK)
 
 class AdminProfile(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated,IsAdminUser]
+    # permission_classes = [IsAdminUser]
     def get(self, request, *args, **kwargs):
         # Assuming you have a model named YourModel
 
