@@ -13,7 +13,7 @@ from rest_framework import status
 from datetime import datetime
 import openpyxl
 from django.core.files.base import ContentFile
-from User.tests import LoginClassTestCase
+from User.tests import UserActionsTestCase
 
 
 
