@@ -505,8 +505,8 @@ class TempManagerConfirmation(mixins.CreateModelMixin,generics.GenericAPIView):
                 template = render_to_string('confirm_admin.html', {'name': name})
                 data = {'to_email': email, 'body': template, 'subject': 'Your request for NoWaste has been accepted :)'}
                 Util.send_email(data)
-                tmp.delete()
                 passwd = tmp.password
+                tmp.delete()
             
         # serializer = MyAuthorSerializer(data=request.data)
             # new_MyAuthor = MyAuthor.objects.create(email = email,name = name,password = passwd,role = "restaurant")
