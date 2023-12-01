@@ -193,7 +193,6 @@ class RestaurantSearchViewSet(ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     search_fields = ['name']
     ordering_fields = ['rate', 'discount', 'name', 'date_of_establishment']
-
     def get_serializer_context(self):
         return {'request': self.request}
     
@@ -206,7 +205,6 @@ class FilterFoodViewSet(ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     search_fields = ['name']
     ordering_fields = ['price', 'name']
-
     def get_serializer_context(self):
         return {'request': self.request}
 
