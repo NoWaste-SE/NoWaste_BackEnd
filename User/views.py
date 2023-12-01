@@ -133,7 +133,7 @@ class LoginView(TokenObtainPairView):
                         result_fav.append({'address': res.address, 'name': res.name, 'restaurant_image': res.restaurant_image, 'discount': res.discount, 'number': res.number, 'rate': res.rate, 'date_of_establishment': res.date_of_establishment, 'description': res.description, 'id': res.id})
                     # listOfFavorite = list(c.list_of_favorites_res)
                     return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'wallet_balance':WalletBalance, 'role':user.role, 'list_of_favorites_res':result_fav, 'name':name})
-                elif user.role == "admin" and user.IsAdminUser :
+                elif user.role == "admin" and user.is_admin and user.is_staff and user.is_superuser :
                     return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'role':user.role})
                 else :
                     r = RestaurantManager.objects.get(email = email)
@@ -492,7 +492,8 @@ class GetCustomers(APIView):
 
 class TempManagerConfirmation(mixins.CreateModelMixin,generics.GenericAPIView):
     serializer_class = TempManagerSerializer
-    
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated,IsAdminUser]
     def post(self,request,*args, **kwargs):
         serializer = TempManagerSerializer(data = request.data)
         if serializer.is_valid(raise_exception=True):
@@ -518,6 +519,8 @@ class TempManagerConfirmation(mixins.CreateModelMixin,generics.GenericAPIView):
 
 
 class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated,IsAdminUser]
     serializer_class = TempManagerSerializer
     queryset = TempManager.objects.all()
     lookup_field = 'id'

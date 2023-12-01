@@ -16,7 +16,7 @@ import random , string
 from django.db import connection
 import openpyxl
 from django.core.files.base import ContentFile
-
+import requests
 
 class LoginClassTestCase(APITestCase):
     def signup(self,email,name):
@@ -42,7 +42,9 @@ class LoginClassTestCase(APITestCase):
             }
         )      
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
+    def createSuperUser(self,email,passw):
+        MyAuthor.objects.create_user(email = email,password = passw,is_admin = True,is_staff=True,is_superuser=True,role="admin")
+
         # Login
     def login(self,email,passw):
         response = self.client.post(
@@ -62,6 +64,7 @@ class LoginClassTestCase(APITestCase):
         self.verify_email(name,passw,role,email)
         token = self.login(email,passw)
         return token
+    
 class ForgotPasswordViewSetTests(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -413,7 +416,8 @@ class AdminViewTestCase(LoginClassTestCase):
 
     def test_adminPanel_method_notAllowed(self):
         # self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")
-        token = self.login("admin@gmail.com", "1234")
+        self.createSuperUser("admin3@gmail.com","1234")
+        token = self.login("admin3@gmail.com", "1234")
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = self.client.delete(self.url, {
                                                     "password": "test_pass",
@@ -421,3 +425,63 @@ class AdminViewTestCase(LoginClassTestCase):
                                                     })
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
+class TempManagerAPITestCase(LoginClassTestCase):
+    def setUp(self):
+        self.url = reverse('reject-tmpMng')
+    def creatTempManager(self,email,name):
+        TempManager.objects.create(email=email,name=name)
+
+    def test_managerConfirmation_checkAuthentication(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_managerConfirmation_checkAuthorization(self):
+        token = self.signup_verifyEmail_login("test_email@gmail.com", "test_pass", "test_name", "customer")       
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # def test_managerConfirmation_method_notAllowed(self):
+    #     # self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")
+    #     self.createSuperUser("admin3@gmail.com","1234")
+    #     token = self.login("admin3@gmail.com", "1234")
+    #     self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+    #     tmpMNGemail = "temp@gmail.com"
+    #     tmpMNGname= "tmpMNG1"
+    #     self.creatTempManager(tmpMNGemail,tmpMNGname)
+    #     response = self.client.delete(self.url, {
+    #                                                     "email": tmpMNGemail,
+    #                                                     "name":tmpMNGname
+    #                                                  })
+    #     self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+class TempManagerConfirmationTestCase(TempManagerAPITestCase):
+    def setUp(self):
+        self.url = reverse('confirm-tmpMng')
+
+    def test_managerConfirmation_method_notAllowed(self):
+        # self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")
+        self.createSuperUser("admin3@gmail.com","1234")
+        token = self.login("admin3@gmail.com", "1234")
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        tmpMNGemail = "temp@gmail.com"
+        tmpMNGname= "tmpMNG1"
+        self.creatTempManager(tmpMNGemail,tmpMNGname)
+        response = self.client.delete(self.url, {
+                                                        "email": tmpMNGemail,
+                                                        "name":tmpMNGname
+                                                     })
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+# class TempManagerRejectionTestCase(LoginClassTestCase):
+#     def setUp(self):
+#         self.setUp('reject-tmpMng')
+
+#     def test_managerRejection_method_notAllowed(self):
+#         # self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer")
+#         self.createSuperUser("admin3@gmail.com","1234")
+#         token = self.login("admin3@gmail.com", "1234")
+#         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+#         response = self.client.get(self.url)
+#         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
