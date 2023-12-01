@@ -66,10 +66,8 @@ class OrderManager(models.Manager):
         )
         return order
 
-
 class Order2(models.Model):
     objects = OrderManager()
-    
     ORDER_STATUS_CHOICES = (
         ("InProgress", "InProgress"), 
         ("Completed", "Completed"), 
@@ -81,7 +79,6 @@ class Order2(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='orders')
     order_date = models.DateTimeField(auto_now_add=True)
-
 #    def __str__(self):
 #        return f"Order #{self.id} by {self.customer_name} on {self.order_date}"
 
@@ -100,7 +97,6 @@ class Order2(models.Model):
             order=self,
             item=item,
         )
-
         if not created:
             if action == "plus":
                 order_item.quantity += 1
@@ -114,7 +110,6 @@ class Order2(models.Model):
         
         if order_item.quantity <= 0:
             order_item.delete()
-        
         return order_item
             
     def clean(self):
@@ -129,21 +124,23 @@ class Order2(models.Model):
             raise ValidationError("You already have an existing order for this restaurant with status 'InProgress'")
 
 
-    
 class OrderItem2(models.Model):    
     order = models.ForeignKey(Order2, on_delete=models.CASCADE)
     item = models.ForeignKey(Food, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-
 #    def __str__(self):
 #        return f"{self.quantity}x {self.item_name} in Order #{self.order.id}"
 
     @property
     def total_price(self):
         return self.quantity * self.item.price
-    
     @property
     def total_price_after_discount(self):
         return self.total_price * (1 - self.order.restaurant.discount)
 
-    # Other fields and methods...
+class RecentlyViewedRestaurant(models.Model):
+    user = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    viewed_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ['-viewed_at']

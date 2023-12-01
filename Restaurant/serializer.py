@@ -229,8 +229,17 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ['text', 'writer_username', 'created_at_date']
 
 class LatLongSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Restaurant
         fields = ['lat','lon']
-        
+
+class RecentlyViewedRestaurantSerializer(serializers.ModelSerializer):
+    def get_viewed_at(self, recently_view):
+        return str(recently_view.viewed_at)[:19]
+    def get_restaurant(self, recently_view ):
+        return RestaurantSerializer(recently_view.restaurant).data
+    restaurant = serializers.SerializerMethodField(read_only=True)
+    viewed_at = serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model = RecentlyViewedRestaurant
+        fields = ['viewed_at','restaurant']

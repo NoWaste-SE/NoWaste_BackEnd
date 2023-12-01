@@ -133,7 +133,7 @@ class LoginView(TokenObtainPairView):
                         result_fav.append({'address': res.address, 'name': res.name, 'restaurant_image': res.restaurant_image, 'discount': res.discount, 'number': res.number, 'rate': res.rate, 'date_of_establishment': res.date_of_establishment, 'description': res.description, 'id': res.id})
                     # listOfFavorite = list(c.list_of_favorites_res)
                     return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'wallet_balance':WalletBalance, 'role':user.role, 'list_of_favorites_res':result_fav, 'name':name})
-                elif user.role == "admin" and user.IsAdminUser :
+                elif user.role == "admin" and user.is_staff and user.is_admin :
                     return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'role':user.role})
                 else :
                     r = RestaurantManager.objects.get(email = email)
@@ -504,8 +504,8 @@ class TempManagerConfirmation(mixins.CreateModelMixin,generics.GenericAPIView):
                 template = render_to_string('confirm_admin.html', {'name': name})
                 data = {'to_email': email, 'body': template, 'subject': 'Your request for NoWaste has been accepted :)'}
                 Util.send_email(data)
-                tmp.delete()
                 passwd = tmp.password
+                tmp.delete()
             
         # serializer = MyAuthorSerializer(data=request.data)
             # new_MyAuthor = MyAuthor.objects.create(email = email,name = name,password = passwd,role = "restaurant")
@@ -534,7 +534,18 @@ class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
             tmp.delete()
         return Response("User rejected and email sent.", status=status.HTTP_200_OK)
 
-class AdminProfile(generics.ListAPIView):
-    serializer_class = ManagerSerialzer
-    queryset = RestaurantManager.objects.all()
-    perssoin_classes = [IsAdminUser,JWTAuthentication]
+class AdminProfile(APIView):
+    def get(self, request, *args, **kwargs):
+        # Assuming you have a model named YourModel
+
+        # Serialize data using two different serializers
+        Managers = ManagerSerialzer(RestaurantManager.objects.all(), many=True)
+        Requests = TempManagerSerializer(TempManager.objects.all(), many=True)
+
+        # Combine serialized data
+        combined_data = {
+            'Managers': Managers.data,
+            'Requests': Requests.data,
+        }
+
+        return Response(combined_data, status=status.HTTP_200_OK)
