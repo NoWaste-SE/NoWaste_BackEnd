@@ -110,7 +110,7 @@ DATABASES = {
         # 'ENGINE': 'django.db.backends.postgresql',
         # 'NAME': 'nowaste',
         # 'USER': 'postgres',
-        # 'PASSWORD': '####',
+        # 'PASSWORD': 'newview-1',
         # 'HOST': 'localhost', 
         # 'PORT': '5432',
     }
