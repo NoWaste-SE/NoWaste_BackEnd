@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y libpq-dev gcc
 
 RUN apt-get install -y --no-install-recommends coreutils
 
+RUN pip install --upgrade pip
+
 COPY ./requirements.txt .
 
 RUN timeout 300 pip install -r requirements.txt

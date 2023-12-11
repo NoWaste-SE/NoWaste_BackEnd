@@ -17,6 +17,58 @@ from django.db import connection
 import openpyxl
 from django.core.files.base import ContentFile
 
+class UserActionsTestCase(APITestCase):
+
+    custId = -1
+    def signup(self,email,name):
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "name": name,
+                "email": email,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    
+    def verify_email(self,name,passw,role,email):    
+        # Verify Email
+        response = self.client.post(
+            reverse("verify-email"),
+            {
+                "name": name,
+                "password": passw,
+                "role": role,
+                "email": email,
+                "code": VC_Codes.objects.get(email=email).vc_code,
+            }
+        )      
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def createSuperUser(self,email,passw):
+        MyAuthor.objects.create_user(email = email,password = passw,is_admin = True,is_staff=True,is_superuser=True,role="admin")
+    
+    def get_customer_id(self):
+        return self.custId
+
+        # Login
+    def login(self,email,passw):
+        response = self.client.post(
+            reverse("login"),
+            {
+                "email": email,
+                "password": passw,
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)        
+        # Get Token
+        token = response.data['access_token']
+        self.custId = response.data['id']
+        # self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        return token
+    def signup_verifyEmail_login(self,email,passw,name,role):
+        self.signup(email,name)
+        self.verify_email(name,passw,role,email)
+        token = self.login(email,passw)
+        return token
 
 class UserActionsTestCase(APITestCase):
 
@@ -391,7 +443,7 @@ class RestaurantInfoExportExcelTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         self.assertTrue('Content-Disposition' in response)
-        # Check the filename
+        # Check the file name
         expected_filename = 'restaurants-info.xlsx'
         content_disposition = response['Content-Disposition']
         self.assertTrue(expected_filename in content_disposition)
