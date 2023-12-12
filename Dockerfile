@@ -16,7 +16,7 @@ RUN pip install --upgrade pip
 
 COPY ./requirements.txt .
 
-RUN timeout 300 pip install -r requirements.txt
+RUN timeout 3000 pip install -r requirements.txt
 
 COPY . /app/
 
