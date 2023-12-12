@@ -125,8 +125,8 @@ class Order2(models.Model):
 
 
 class OrderItem2(models.Model):    
-    order = models.ForeignKey(Order2, on_delete=models.CASCADE)
-    item = models.ForeignKey(Food, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order2, on_delete=models.CASCADE) # which order (we have several orders of different restaurants)
+    item = models.ForeignKey(Food, on_delete=models.CASCADE) # id of food
     quantity = models.PositiveIntegerField(default=1)
 #    def __str__(self):
 #        return f"{self.quantity}x {self.item_name} in Order #{self.order.id}"
