@@ -411,15 +411,15 @@ class CustomerOrderViewAPI(generics.ListAPIView):
 
 '''class for Listing Orders of a restaurant'''       
 class RestaurantOrderViewAPI(generics.ListAPIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = RestaurantOrderViewSerializer
     def get_queryset(self):
         # Listing Orders of a restaurant(the resturanst are unified by their manager id)
-        queryset = Restaurant.objects.filter(manager_id = self.kwargs['manager_id']).prefetch_related('Orders')
+        queryset = Restaurant.objects.filter(manager_id = self.kwargs['manager_id']).prefetch_related('orders')
         ordersList = []
         for restaurant in queryset:
-            orders = restaurant.Orders.all()
+            orders = restaurant.orders.all()
             for order in orders:
                 ordersList.append(order)
         return ordersList
