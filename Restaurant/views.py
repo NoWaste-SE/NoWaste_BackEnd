@@ -452,9 +452,9 @@ class CommentAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        print("0000000000000000")
         serializer = CommentSerializer(data=request.data)
-        writer = Customer.objects.get(id = kwargs['user_id'])
+        u = GetUserByToken(request)
+        writer = Customer.objects.get(id=u.id)
         restaurant = Restaurant.objects.get(id = kwargs['restaurant_id'])
         if serializer.is_valid(raise_exception=True):
             # profanity_prediction = predict([serializer.validated_data['text']])[0]
@@ -468,7 +468,8 @@ class CommentAPI(APIView):
     
     def get(self, request, *args, **kwargs):
         serializer = CommentSerializer()
-        writer = Customer.objects.get(id = kwargs['user_id'])
+        u = GetUserByToken(request)
+        writer = Customer.objects.get(id=u.id)
         restaurant = Restaurant.objects.get(id = kwargs['restaurant_id'])
         try:
             comment = Comment.objects.get(writer=writer, restaurant=restaurant)

@@ -434,8 +434,8 @@ class CommentAPITestCase(APITestCase):
         data = {'text': 'This is a test comment'}
         user_id = self.customer_id
         restaurant_id = self.restaurant.id
-        self.url = reverse('comment', kwargs={'user_id': user_id, 'restaurant_id': restaurant_id})
-        expected_url = f'/restaurant/comment/user_id/{user_id}/restaurant_id/{restaurant_id}/'
+        self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
+        expected_url = f'/restaurant/comment/restaurant_id/{restaurant_id}/'
         self.assertEqual(self.url, expected_url)
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -447,7 +447,7 @@ class CommentAPITestCase(APITestCase):
         user_id = self.customer_id
         user = Customer.objects.get(id = self.customer_id)
         restaurant_id = self.restaurant.id
-        self.url = reverse('comment', kwargs={'user_id': user_id, 'restaurant_id': restaurant_id})
+        self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
         comment = Comment.objects.create(writer=user, restaurant=self.restaurant, text='Test comment')
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -457,13 +457,13 @@ class CommentAPITestCase(APITestCase):
         self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer")
         user_id = self.customer_id
         restaurant_id = self.restaurant.id
-        self.url = reverse('comment', kwargs={'user_id': user_id, 'restaurant_id': restaurant_id})
+        self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(response.data.get('comment'))
 
     def test_get_comment_invalid_user_or_restaurant(self):
-        response = self.client.get('/restaurant/comment/user_id/invalid_user_id/restaurant_id/invalid_restaurant_id/')
+        response = self.client.get('/restaurant/comment/restaurant_id/invalid_restaurant_id/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
