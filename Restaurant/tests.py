@@ -15,7 +15,7 @@ import openpyxl
 from django.core.files.base import ContentFile
 from User.tests import UserActionsTestCase
 
-
+from .views import RestaurantProfileViewSet
 
 # # creat test for orderviewset2
 # class OrderViewSet2Test(APITestCase):
@@ -609,3 +609,39 @@ class RestaurantSearchViewSetTestCase(APITestCase):
         rates = [item['rate'] for item in response.data]
         self.assertEqual(rates, sorted(rates, reverse=True))
         self.assertTrue(all(float(discount) <= 0.1 for discount in discounts))
+
+class RestaurantProfileViewSetTestCase(TestCase):
+    def setUp(self):
+        # self.url = reverse(viewname= "RestaurantProfileViewSet")
+        self.manager = RestaurantManager.objects.create(
+            email='manager@example.com',
+            name='Test Manager',
+            password='managerpassword',
+            role='restaurant'
+        )
+        self.restaurant = Restaurant.objects.create(
+            type='Iranian',
+            address='Test Address',
+            name='Test Restaurant',
+            manager=self.manager
+        )
+        self.restaurant2 = Restaurant.objects.create(
+            type='Iranian',
+            address='Test Address',
+            name='Test Restaurant2',
+            manager=self.manager
+        )
+        self.user_actoin = UserActionsTestCase()
+    # check authentication
+    def test_check_authenticatoin(self):
+        self.url = reverse('rest-profile-get')
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        token = self.user_actoin.login(self.manager.email,self.manager.password)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    # def
+    # check for method not Allowed 
+
+    # check for 
