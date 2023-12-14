@@ -18,6 +18,9 @@ jobs:
         include:
           - db: postgres
             db_port: 5432
+        redis:
+          - '6.2'
+          - '6.0'
 
     services:
       db:
@@ -42,6 +45,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Setup redis
+        uses: shogo82148/actions-setup-redis@v1
+        with:
+            redis-version: ${{ matrix.redis }}
+            auto-start: "true"
       - name: Run Tests
         env:
           DB: ${{ matrix.db }}
@@ -71,3 +79,5 @@ jobs:
             git pull origin main
             sudo docker compose down
             sudo docker compose up -d --build
+            sudo systemctl daemon-reload
+            sudo systemctl restart nginx
