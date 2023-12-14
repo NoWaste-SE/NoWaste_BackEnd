@@ -26,6 +26,10 @@ class Food(models.Model):
     def __str__(self) -> str:
         return self.name
 
+class Cart(models.Model):
+    user = models.ForeignKey(Customer, on_delete=models.CASCADE)
+
+        
 class Order(models.Model):
     status = (
         ("InProgress", "InProgress"), 
@@ -38,6 +42,7 @@ class Order(models.Model):
     restaurant = models.ForeignKey(Restaurant,on_delete=models.CASCADE,related_name="Orders")
     userId = models.ForeignKey(Customer,on_delete=models.DO_NOTHING,related_name="Orders")
     created_at = models.DateTimeField(auto_now_add= True)
+    cart = models.ForeignKey(Cart,on_delete=models.DO_NOTHING,related_name="Orders", null=True, default=None)
     def __str__(self) -> str:
         return "user: " + str(self.userId) + " - order id: " + str(self.id)
 
@@ -144,3 +149,4 @@ class RecentlyViewedRestaurant(models.Model):
     viewed_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         ordering = ['-viewed_at']
+

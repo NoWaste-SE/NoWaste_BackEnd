@@ -43,6 +43,7 @@ urlpatterns = [
     path('excel/customer/<int:restaurant_id>/<int:userId>/order-history/',OrderHistoryCustomerExportExcel.as_view(),name='csv-order-history-customer'),
     path('excel/customer/<int:userId>/order-history/',OrderHistoryDiffRestaurantCustomerExportExcel.as_view(),name='csv-diff-order-history-customer'),
     path('recently-viewed/', RecentlyViewedRestaurantsCusotmerView.as_view(), name='recently-viewed'),
+    path('cart/<int:userId>', CartAPIView.as_view(), name='cart'),
 ]
 
 
