@@ -69,5 +69,15 @@ class ChatConsumer(WebsocketConsumer):
 
     @sync_to_async
     def save_message(self, user, room, message):
+        room_instance = Room.objects.filter(room_name = room).first()
+        if (room_instance is None):
+            ids= room.split('_')
+            custId = ids[0]
+            mngId = ids[1]
+            customer = MyAuthor.objects.filter(id = custId).first()
+            manager = MyAuthor.objects.filter(id= mngId).first()
+            room_instance = Room.objects.create(customer = customer , manager = manager, room_name = room)
+        # Chat.objects.create(sender_id=user, room_name=room, message=message,room = room_instance.id)
         Chat.objects.create(sender_id=user, room_name=room, message=message)
+
 
