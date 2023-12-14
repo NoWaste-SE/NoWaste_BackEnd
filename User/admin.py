@@ -5,11 +5,11 @@ from .models import *
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import MyAuthor
 from django.utils.html import format_html
+
 class UserAdmin(BaseUserAdmin):
     # Use the email field as the username field in the admin interface
     ordering = ['email']
-    list_display = ['email', 'is_staff','Role']
-    # list_display_links = ('colored_role')
+    list_display = ['email', 'is_staff','Role','id','is_admin']
     def Role(self, obj):
         if obj.role == "customer":
             
@@ -18,13 +18,13 @@ class UserAdmin(BaseUserAdmin):
             return format_html (f'<span style="color:green">{obj.role}</span>')
     list_filter = ['role', 'is_staff', 'email']
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
+        (None, {'fields': ('email', 'password','role')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser','is_admin')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'is_active', 'is_staff', 'is_superuser')}
+            'fields': ('email', 'password1', 'password2','role', 'is_active', 'is_staff', 'is_superuser','is_admin')}
         ),
     )
     search_fields = ('email',)
@@ -34,13 +34,6 @@ class UserAdmin(BaseUserAdmin):
         # Hash the password before saving the user model
         obj.set_password(obj.password)
         super().save_model(request, obj, form, change)
-
-# admin.site.register(MyAuthor, UserAdmin)
-
-# class UserAdmin(BaseUserAdmin):
-#     pass
-# admin.site.register(MyAuthor, UserAdmin)
-# admin.site.register(MyAuthor)
 
 class RestaurantManagerAdmin(admin.ModelAdmin):
     ordering = ['name']
@@ -71,11 +64,16 @@ class VC_CodesAdmin(admin.ModelAdmin):
     list_filter = ['name','vc_code']
     search_fields = ('name','vc_code')
 
+class TempManagerAdmin(admin.ModelAdmin):
+    ordering = ['name']
+    list_display = ['name', 'email', 'password']
+    list_filter = ['email','name']
+
 admin.site.register(Customer,CustomerAdmin)
 admin.site.register(Restaurant,RestaurantAdmin)
 admin.site.register(VC_Codes,VC_CodesAdmin)
 admin.site.register(RestaurantManager,RestaurantManagerAdmin)
 admin.site.register(MyAuthor, UserAdmin)
+admin.site.register(TempManager, TempManagerAdmin)
 
 
-# admin.site.register(CountryCityDict)

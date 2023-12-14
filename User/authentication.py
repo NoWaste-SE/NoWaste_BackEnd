@@ -2,7 +2,6 @@ import jwt ,datetime
 
 
 def create_access_token(id,email,password):
-    # return jwt.encode
     return jwt.encode({
         'user_id': id,
         'email': email,

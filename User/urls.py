@@ -3,8 +3,7 @@ from .views import *
 from rest_framework import routers
 
 
-# router = routers.DefaultRouter()
-# router.register(r'update_profile', UpdateProfileView, basename='update_profile')
+
 urlpatterns = [
     path('signup/', SignUpView.as_view(), name='signup'),
     path('login/', LoginView.as_view(), name='login'),
@@ -19,10 +18,19 @@ urlpatterns = [
     path('favorite-restaurant/', AddRemoveFavorite.as_view(), name='favorite-restaurant'),
     path('charge-wallet/', ChargeWalletView.as_view(), name='charge-wallet'),
     path('withdraw-wallet/', WithdrawFromWalletView.as_view(), name='withdraw-wallet'),
-    # path('city-country/', CitiesView.as_view(), name='city-country'),
-    # path('full-city-country/', FullCountryCityDict.as_view(), name='full-city-country'),
-    # path('show-city-country/', ShowCountryCityDict.as_view(), name='show-city-country'),
     path('all-countries/', ShowAllCountry.as_view(), name='all-countries'),
     path('cities-of-country/', CitiesOfCountry.as_view(), name='cities-of-country'),
     path('<int:user_id>/lat_long/',LatLongUpdateRetreive.as_view(),name='get_lat_long'),
+    path('excel/restaurants-info/', RestaurantInfoExportExcel.as_view(), name='csv-restaurants-info'),
+    path('orders/', OrderViewSet2.as_view({'get': 'list'}), name='order'),  # all orders of several restaurants
+    path('orders/<int:pk>/', OrderViewSet2.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='order-detail'), # the order of one restaurant
+    path('orders/items/', OrderItemViewSet2.as_view({'post': 'create', 'get': 'list'}), name='order-add-item'), # add one food the one restaurant order
+    path('all_restaurants/', GetRestaurants.as_view(), name='all_restaurants'),
+    path('all_customers/', GetCustomers.as_view(), name='all_customers'),
+    # path('temp-manager/',TempManagerConfirmation.as_view(),name='add-delete-tmpMng'),
+    path('temp-manager-confirm/',TempManagerConfirmation.as_view(),name='confirm-tmpMng'),
+    path('temp-manager-reject/<int:pk>/',TempManagerRejection.as_view(),name='reject-tmpMng'),
+    # path('accept/', AcceptByAdminView.as_view(), name='accept'),
+    # path('reject/', RejectByAdminView.as_view(), name='reject'),
+    path('admin-profile/', AdminProfile.as_view(), name='admin-profile'),
 ]

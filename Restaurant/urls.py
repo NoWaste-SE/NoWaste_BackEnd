@@ -22,7 +22,6 @@ restaurant_router.register('food', FoodViewSet, basename='restaurant-food')
 
 urlpatterns = [
     path(r'', include(router.urls)),
-    # path(r'', include(order_router.urls)),
     path('<int:manager_id>/orderview/',RestaurantOrderViewAPI.as_view(),name = 'restaurant-orders-view'),
     path('restaurant_view/<int:restaurant_id>/<int:userId>/order/',OrderAPIView.as_view(), name = 'order-detail'),
     path('restaurant_view/<int:restaurant_id>/<int:userId>/order/<uuid:order_id>/',UpdateOrderStatusAPI.as_view(), name = 'update-order-status'),
@@ -36,10 +35,14 @@ urlpatterns = [
     path('managers/<int:manager_id>/restaurants/<int:restaurant_id>/food/<int:pk>/',  ManagerFoodViewSet.as_view(), name='food-detail'),
     path('comment/user_id/<int:user_id>/restaurant_id/<int:restaurant_id>/', CommentAPI.as_view(), name='comment'),
     path('restaurant_id/<int:restaurant_id>/comments/', RestaurantCommentListAPIView.as_view(), name='restaurant-comments'),
-    # path('nearest_restaurant/<str:origin>',search_nearest_restaurant,name='search_nearest_restaurant'),
     path('nearest_restaurant',SearchNearestRestaurant.search_nearest_restaurant,name='search_nearest_restaurant'),
     path('getaddr',get_addr,name='get_addr'),
     path('<int:restaurant_id>/lat_long',LatLongUpdateRetreive.as_view(),name='get_update_lat_long'),
+    path('test', test, name='test'),
+    path('excel/manager/<int:manager_id>/order-history/',OrderHistoryManagerExportExcel.as_view(),name='csv-order-history-manager'),
+    path('excel/customer/<int:restaurant_id>/<int:userId>/order-history/',OrderHistoryCustomerExportExcel.as_view(),name='csv-order-history-customer'),
+    path('excel/customer/<int:userId>/order-history/',OrderHistoryDiffRestaurantCustomerExportExcel.as_view(),name='csv-diff-order-history-customer'),
+    path('recently-viewed/', RecentlyViewedRestaurantsCusotmerView.as_view(), name='recently-viewed'),
 ]
 
 

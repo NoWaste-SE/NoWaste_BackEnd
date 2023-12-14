@@ -11,8 +11,13 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
-import datetime
 import os
+from datetime import timedelta
+# from environs import Env
+
+# # Environment Variables
+# env = Env()
+# env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,7 +44,6 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.sessions",
     "django.contrib.contenttypes",
-    # "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
@@ -50,27 +54,16 @@ INSTALLED_APPS = [
     'django_filters',
     'chat',
     'cities_light',
-    # 'django-cities-light',
-    # 'cities',
-    # 'rest_framework_jwt',
 ]
 
-# JWT_AUTH = {
-#     'JWT_SECRET_KEY': 'your-secret-key',
-#     'JWT_ALGORITHM': 'HS256',
-#     'JWT_ALLOW_REFRESH': True,
-#     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
-#     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
-# }
+
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-    'rest_framework.authentication.TokenAuthentication',
-    ),
-    # 'DEFUAULT_PERMISSION_CLASSES':[
-    #     'rest_framework.permissions.AllowAny'
-    # ]
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
 }
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -78,7 +71,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = "NoWaste.urls"
@@ -117,6 +109,23 @@ ASGI_APPLICATION = "NoWaste.asgi.application"
 #     }
 # }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': env.str('DB_NAME'),
+#         'USER': env.str('DB_USER'),    
+#         'PASSWORD': env.str('DB_PASSWORD'),  
+#         'HOST': env.str('DB_HOST'), 
+#         'PORT': '5432',  
+        
+#         # 'ENGINE': 'django.db.backends.postgresql',
+#         # 'NAME': 'nowaste',
+#         # 'USER': 'postgres',
+#         # 'PASSWORD': 'newview-1',
+#         # 'HOST': 'localhost', 
+#         # 'PORT': '5432',
+#     }
+# }
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -186,20 +195,15 @@ EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-# EMAIL_HOST_USER = 'NoWaste.39@gmail.com'
-# EMAIL_HOST_PASSWORD = 'tznlpoehlwahkjtg'
 EMAIL_HOST_USER = 'gen39.nowaste@gmail.com'
 EMAIL_HOST_PASSWORD = 'kjdkhcyjbllacpnv'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ORIGIN_WHITELIST = (
-#        'http://127.0.0.1',
-# )
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        # 'BACKEND': 'channels.layers.InMemoryChannelLayer',
         "CONFIG": {
             "hosts": [("127.0.0.1" , 6379)],
         },
@@ -210,4 +214,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR,'static')
 ]
 
-# CITIES_LIGHT_CITY_SOURCES = ['openstreetmap']
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=2),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
