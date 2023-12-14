@@ -319,11 +319,12 @@ class OrderAPIView(generics.RetrieveUpdateAPIView,generics.CreateAPIView):
         instance =  self.get_queryset().filter(restaurant_id=self.kwargs['restaurant_id'],userId_id = self.kwargs['userId']).exclude(Q(status='Completed') | Q(status='Ordered'))
         serializer = None
         if (instance.count() == 0) :
-            cart = Cart.objects.filter(user_id = kwargs['userId']).first()
-            if (cart is None):
-                cart = Cart.objects.create(user_id = kwargs['userId'])
-            instance = Order.objects.create(restaurant_id=self.kwargs['restaurant_id'],userId_id = self.kwargs['userId'], cart_id = cart.id)
-            serializer = self.get_serializer(instance)
+            return Response({})
+        #     cart = Cart.objects.filter(user_id = kwargs['userId']).first()
+        #     if (cart is None):
+        #         cart = Cart.objects.create(user_id = kwargs['userId'])
+        #     instance = Order.objects.create(restaurant_id=self.kwargs['restaurant_id'],userId_id = self.kwargs['userId'], cart_id = cart.id)
+        #     serializer = self.get_serializer(instance)
         else :
             serializer = self.get_serializer(instance,many = True)
         return Response(serializer.data)
