@@ -74,7 +74,9 @@ class ChatConsumer(WebsocketConsumer):
             ids= room.split('_')
             custId = ids[0]
             mngId = ids[1]
-            room_instance = Room.objects.create(cust_id = custId , manager_id = mngId, room_name = room)
+            customer = MyAuthor.objects.filter(id = custId).first()
+            manager = MyAuthor.objects.filter(id= mngId).first()
+            room_instance = Room.objects.create(customer = customer , manager = manager, room_name = room)
         # Chat.objects.create(sender_id=user, room_name=room, message=message,room = room_instance.id)
         Chat.objects.create(sender_id=user, room_name=room, message=message)
 

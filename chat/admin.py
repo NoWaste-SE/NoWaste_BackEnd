@@ -14,7 +14,7 @@ admin.site.register(Chat, ChatAdmin)
 
 class RoomAdmin(admin.ModelAdmin):
     ordering = ['id']
-    list_display = ['room_name', 'cust_id', 'manager_id']
-    list_filter = ['cust_id','manager_id','room_name']
-    search_fields = ('room_name','cust_id','manager_id')
+    list_display = ['room_name', 'customer', 'manager']
+    list_filter = ['customer','manager','room_name']
+    search_fields = ('room_name','customer','manager')
 admin.site.register(Room, RoomAdmin)

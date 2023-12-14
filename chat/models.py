@@ -6,9 +6,9 @@ class Room(models.Model):
     class Meta:
         app_label = "chat"
         managed = True
-    cust_id = models.ForeignKey(MyAuthor, related_name='custs_room', on_delete=models.CASCADE)
+    customer = models.ForeignKey(MyAuthor, related_name='custs_room', on_delete=models.CASCADE)
     room_name = models.CharField(max_length=250)
-    manager_id = models.ForeignKey(MyAuthor, related_name='managers_room', on_delete=models.CASCADE)
+    manager = models.ForeignKey(MyAuthor, related_name='managers_room', on_delete=models.CASCADE)
 
 class Chat(models.Model):
     class Meta:
