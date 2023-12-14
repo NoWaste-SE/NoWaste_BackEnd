@@ -146,7 +146,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class SimpleRestaurantSerializer(serializers.ModelSerializer):
     class Meta : 
         model = Restaurant
-        fields = ['name','address','logo','number','id']
+        fields = ['name','address','logo','number','id','restaurant_image']
 
 class GetOrderSerializer(serializers.ModelSerializer):
     def get_Subtotal_Grandtotal_discount(self, order:Order):
