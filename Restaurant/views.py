@@ -273,11 +273,37 @@ class RestaurantManagerRestaurantDetailView(generics.RetrieveUpdateDestroyAPIVie
         context = super().get_serializer_context()
         context['manager'] = RestaurantManager.objects.get(pk=self.kwargs['manager_id'])
         return context
+'API for showing Cart of a customer'
+class CartAPIView(generics.RetrieveAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = CartSerializer
+    lookup_field = 'pk'
+    def get_queryset(self):
+        return Cart.objects.filter(user_id = self.kwargs['userId'])
+    
+    def get_serializer_context(self):
+        return {'user_id': self.kwargs['userId']}
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance =  self.get_queryset()
+        serializer = None
+        if (instance.count() == 0):
+            instance = Cart.objects.create(user_id = self.kwargs['userId'])
+            serializer = self.get_serializer(instance)
+        else :
+            serializer = self.get_serializer(instance,many = True)
+        return Response(serializer.data)
+    
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+    # def delete(self, request, *args, **kwargs):
+    #     return super().delete(request, *args, **kwargs)
 
 '''APIView for Orders'''
 class OrderAPIView(generics.RetrieveUpdateAPIView,generics.CreateAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
     serializer_class = GetOrderSerializer
     lookup_field = 'pk'
     def get_queryset(self):
@@ -293,8 +319,10 @@ class OrderAPIView(generics.RetrieveUpdateAPIView,generics.CreateAPIView):
         instance =  self.get_queryset().filter(restaurant_id=self.kwargs['restaurant_id'],userId_id = self.kwargs['userId']).exclude(Q(status='Completed') | Q(status='Ordered'))
         serializer = None
         if (instance.count() == 0) :
-            print("hiii")
-            instance = Order.objects.create(restaurant_id=self.kwargs['restaurant_id'],userId_id = self.kwargs['userId'])
+            cart = Cart.objects.filter(user_id = kwargs['userId']).first()
+            if (cart is None):
+                cart = Cart.objects.create(user_id = kwargs['userId'])
+            instance = Order.objects.create(restaurant_id=self.kwargs['restaurant_id'],userId_id = self.kwargs['userId'], cart_id = cart.id)
             serializer = self.get_serializer(instance)
         else :
             serializer = self.get_serializer(instance,many = True)
@@ -304,15 +332,22 @@ class OrderAPIView(generics.RetrieveUpdateAPIView,generics.CreateAPIView):
         return self.retrieve(request, *args, **kwargs)
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
+    # def delete(self, request, *args, **kwargs):
+    #     return super().delete(request, *args, **kwargs)
+
 
 '''API function for adding orderItem to order'''
 def add_to_Order(request, *args, **kwargs):
     order  =  Order.objects.filter(restaurant_id=kwargs['restaurant_id'],userId_id = kwargs['userId'],status = 'notOrdered').first()
     instance = order
-    if(order is None):
+    if(order is None): 
+        # add to cart
+        cart = Cart.objects.filter(user_id = kwargs['userId']).first()
+        if (cart is None):
+            cart = Cart.objects.create(user_id = kwargs['userId'])
         # create new order and then add new orderitem
         try :
-            order = Order.objects.create(restaurant_id=kwargs['restaurant_id'],userId_id = kwargs['userId'])
+            order = Order.objects.create(restaurant_id=kwargs['restaurant_id'],userId_id = kwargs['userId'], cart_id = cart.id)
             instance = OrderItem.objects.create(food_id = kwargs['food_id'], order_id = order.id)
         # handle the exception
         except Exception as error:
@@ -425,7 +460,7 @@ class RestaurantOrderViewAPI(generics.ListAPIView):
         return ordersList
 
 '''class for Updating the Order Status'''
-class UpdateOrderStatusAPI(generics.UpdateAPIView):
+class UpdateOrderStatusAPI(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
@@ -445,6 +480,14 @@ class UpdateOrderStatusAPI(generics.UpdateAPIView):
     
     def put(self, request, *args, **kwargs):
         return self.patch(request, *args, **kwargs)
+    
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if (instance.status == 'notOrdered'):
+            instance.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response("Order status is not 'notOrdered'!", status=status.HTTP_400_BAD_REQUEST)
 
 '''class for post and get a comment'''
 class CommentAPI(APIView):
@@ -452,9 +495,9 @@ class CommentAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        print("0000000000000000")
         serializer = CommentSerializer(data=request.data)
-        writer = Customer.objects.get(id = kwargs['user_id'])
+        u = GetUserByToken(request)
+        writer = Customer.objects.get(id=u.id)
         restaurant = Restaurant.objects.get(id = kwargs['restaurant_id'])
         if serializer.is_valid(raise_exception=True):
             # profanity_prediction = predict([serializer.validated_data['text']])[0]
@@ -468,7 +511,8 @@ class CommentAPI(APIView):
     
     def get(self, request, *args, **kwargs):
         serializer = CommentSerializer()
-        writer = Customer.objects.get(id = kwargs['user_id'])
+        u = GetUserByToken(request)
+        writer = Customer.objects.get(id=u.id)
         restaurant = Restaurant.objects.get(id = kwargs['restaurant_id'])
         try:
             comment = Comment.objects.get(writer=writer, restaurant=restaurant)

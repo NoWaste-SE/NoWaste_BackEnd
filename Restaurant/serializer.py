@@ -4,6 +4,15 @@ from rest_framework import serializers
 from User.models import Restaurant ,Customer, RestaurantManager
 from .models import *
 
+class CartSerializer(serializers.ModelSerializer):
+    def get_orders(self, cart):
+        queryset = cart.Orders.filter(status='notOrdered')
+        return CustomerViewOrderSerializer(queryset, many=True).data
+    orders = serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'orders']
+        lookup_field = 'id'
 class RestaurantSerializer(serializers.ModelSerializer):
 
     class Meta:
