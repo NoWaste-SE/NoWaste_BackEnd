@@ -79,3 +79,5 @@ jobs:
             git pull origin main
             sudo docker compose down
             sudo docker compose up -d --build
+            sudo systemctl daemon-reload
+            sudo systemctl restart nginx
