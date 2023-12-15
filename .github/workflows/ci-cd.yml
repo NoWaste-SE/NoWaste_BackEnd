@@ -18,6 +18,8 @@ jobs:
         include:
           - db: postgres
             db_port: 5432
+        redis:
+        - '4.5.4'
 
     services:
       db:
