@@ -42,6 +42,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+
+      - name: Setup redis
+        uses: shogo82148/actions-setup-redis@v1
+        with:
+          redis-version: ${{ matrix.redis }}
+          auto-start: "true"
+
+
       - name: Run Tests
         env:
           DB: ${{ matrix.db }}
@@ -50,6 +58,7 @@ jobs:
           DB_PASSWORD: gen39nowaste
         run: |
           python manage.py test
+
   deploy:
     needs: quality-assurance
     name: Deploy
@@ -57,8 +66,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - 
-        name: remote ssh
+
+      - name: remote ssh
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -71,3 +80,5 @@ jobs:
             git pull origin main
             sudo docker compose down
             sudo docker compose up -d --build
+            sudo systemctl daemon-reload
+            sudo systemctl restart nginx
