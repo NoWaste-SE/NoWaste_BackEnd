@@ -18,6 +18,8 @@ jobs:
         include:
           - db: postgres
             db_port: 5432
+        # redis:
+        # - '4.5.4'
 
     services:
       db:
@@ -46,7 +48,7 @@ jobs:
       - name: Setup redis
         uses: shogo82148/actions-setup-redis@v1
         with:
-          redis-version: ${{ matrix.redis }}
+          # redis-version: latest
           auto-start: "true"
 
 
