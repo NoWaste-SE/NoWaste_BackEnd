@@ -10,7 +10,7 @@ services:
     #            python manage.py makemigrations &&
     #            python manage.py migrate &&
     #            gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
-    command: python manage.py runserver
+    command: python manage.py runserver 0.0.0.0:8000
     
     volumes:
       - .:/app
@@ -24,11 +24,10 @@ services:
 
     env_file:
       - ./NoWaste/deploy.env
-
-
-    
+   
     depends_on:
       - db
+      - redis
     networks:
       - nowaste
 
@@ -56,6 +55,7 @@ services:
       - redis:/bitnami/redis/data
     networks:
       - nowaste
+
   # nginx:
   #   image: nginx
   #   container_name: nginx
@@ -75,6 +75,7 @@ volumes:
   postgres_data:
   static_volume:
   media_volume:
+  redis:
 
 networks:
   nowaste:
