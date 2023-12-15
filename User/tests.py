@@ -401,7 +401,7 @@ class RestaurantInfoExportExcelTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         self.assertTrue('Content-Disposition' in response)
-        # Check the filename
+        # Check the file name
         expected_filename = 'restaurants-info.xlsx'
         content_disposition = response['Content-Disposition']
         self.assertTrue(expected_filename in content_disposition)

@@ -17,7 +17,7 @@ from django.core.files.base import ContentFile
 from User.tests import UserActionsTestCase
 import time
 
-
+from .views import RestaurantProfileViewSet
 
 # # creat test for orderviewset2
 # class OrderViewSet2Test(APITestCase):
@@ -436,8 +436,8 @@ class CommentAPITestCase(APITestCase):
         data = {'text': 'This is a test comment'}
         user_id = self.customer_id
         restaurant_id = self.restaurant.id
-        self.url = reverse('comment', kwargs={'user_id': user_id, 'restaurant_id': restaurant_id})
-        expected_url = f'/restaurant/comment/user_id/{user_id}/restaurant_id/{restaurant_id}/'
+        self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
+        expected_url = f'/restaurant/comment/restaurant_id/{restaurant_id}/'
         self.assertEqual(self.url, expected_url)
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -449,7 +449,7 @@ class CommentAPITestCase(APITestCase):
         user_id = self.customer_id
         user = Customer.objects.get(id = self.customer_id)
         restaurant_id = self.restaurant.id
-        self.url = reverse('comment', kwargs={'user_id': user_id, 'restaurant_id': restaurant_id})
+        self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
         comment = Comment.objects.create(writer=user, restaurant=self.restaurant, text='Test comment')
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -459,13 +459,13 @@ class CommentAPITestCase(APITestCase):
         self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer")
         user_id = self.customer_id
         restaurant_id = self.restaurant.id
-        self.url = reverse('comment', kwargs={'user_id': user_id, 'restaurant_id': restaurant_id})
+        self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(response.data.get('comment'))
 
     def test_get_comment_invalid_user_or_restaurant(self):
-        response = self.client.get('/restaurant/comment/user_id/invalid_user_id/restaurant_id/invalid_restaurant_id/')
+        response = self.client.get('/restaurant/comment/restaurant_id/invalid_restaurant_id/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
@@ -612,6 +612,41 @@ class RestaurantSearchViewSetTestCase(APITestCase):
         self.assertEqual(rates, sorted(rates, reverse=True))
         self.assertTrue(all(float(discount) <= 0.1 for discount in discounts))
 
+# class RestaurantProfileViewSetTestCase(TestCase):
+#     def setUp(self):
+#         # self.url = reverse(viewname= "RestaurantProfileViewSet")
+#         self.manager = RestaurantManager.objects.create(
+#             email='manager@example.com',
+#             name='Test Manager',
+#             password='managerpassword',
+#             role='restaurant'
+#         )
+#         self.restaurant = Restaurant.objects.create(
+#             type='Iranian',
+#             address='Test Address',
+#             name='Test Restaurant',
+#             manager=self.manager
+#         )
+#         self.restaurant2 = Restaurant.objects.create(
+#             type='Iranian',
+#             address='Test Address',
+#             name='Test Restaurant2',
+#             manager=self.manager
+#         )
+#         self.user_actoin = UserActionsTestCase()
+#     # check authentication
+#     def test_check_authenticatoin(self):
+#         self.url = reverse('rest-profile-get')
+#         response = self.client.get(self.url)
+#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+#         token = self.user_actoin.login(self.manager.email,self.manager.password)
+#         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+#         response = self.client.get(self.url)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#     # def
+#     # check for method not Allowed 
+
+#     # check for 
 
 class RecentlyViewedRestaurantTestCase(TestCase):
     def setUp(self):

@@ -12,9 +12,13 @@ RUN apt-get update && apt-get install -y libpq-dev gcc
 
 RUN apt-get install -y --no-install-recommends coreutils
 
+RUN pip install --upgrade pip
+
+# RUN pip install scikit-learn==1.3.2
+
 COPY ./requirements.txt .
 
-RUN timeout 300 pip install -r requirements.txt
+RUN timeout 3000 pip install -r requirements.txt
 
 COPY . /app/
 

@@ -4,12 +4,21 @@ from rest_framework import serializers
 from User.models import Restaurant ,Customer, RestaurantManager
 from .models import *
 
+class CartSerializer(serializers.ModelSerializer):
+    def get_orders(self, cart):
+        queryset = cart.Orders.filter(status='notOrdered')
+        return CustomerViewOrderSerializer(queryset, many=True).data
+    orders = serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'orders']
+        lookup_field = 'id'
 class RestaurantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Restaurant
         address = serializers.CharField(source = 'address')
-        fields = ('number','name','address','rate','discount','date_of_establishment','description','restaurant_image','id', 'type','lat','lon','manager_id')
+        fields = ('number','name','address','rate','discount','date_of_establishment','description','id', 'type','lat','lon','manager_id','restaurant_image')
 
         extra_kwargs = {
             'address': {'required': False},
@@ -137,7 +146,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class SimpleRestaurantSerializer(serializers.ModelSerializer):
     class Meta : 
         model = Restaurant
-        fields = ['name','address','logo','number','id']
+        fields = ['name','address','logo','number','id','restaurant_image']
 
 class GetOrderSerializer(serializers.ModelSerializer):
     def get_Subtotal_Grandtotal_discount(self, order:Order):

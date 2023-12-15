@@ -515,7 +515,6 @@ class TempManagerConfirmation(mixins.CreateModelMixin,generics.GenericAPIView):
             new_manager.save()
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 
 class TempManagerRejection(generics.DestroyAPIView,generics.RetrieveAPIView):
@@ -543,7 +542,6 @@ class AdminProfile(APIView):
     # permission_classes = [IsAdminUser]
     def get(self, request, *args, **kwargs):
         # Assuming you have a model named YourModel
-
         # Serialize data using two different serializers
         Managers = ManagerSerialzer(RestaurantManager.objects.all(), many=True)
         Requests = TempManagerSerializer(TempManager.objects.all(), many=True)
@@ -553,5 +551,4 @@ class AdminProfile(APIView):
             'Managers': Managers.data,
             'Requests': Requests.data,
         }
-
         return Response(combined_data, status=status.HTTP_200_OK)
