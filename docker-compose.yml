@@ -11,6 +11,7 @@ services:
     #            python manage.py migrate &&
     #            gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
     command: python manage.py runserver 0.0.0.0:8000
+
     
     volumes:
       - .:/app
@@ -44,17 +45,6 @@ services:
     networks:
       - nowaste
 
-  redis:
-    image: 'bitnami/redis:latest'
-    ports:
-      - 6379:6379
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_REPLICATION_MODE=master
-    volumes:
-      - redis:/bitnami/redis/data
-    networks:
-      - nowaste
 
   # nginx:
   #   image: nginx
@@ -70,7 +60,7 @@ services:
   #     - backend
   #   networks:
   #     - nowaste
-
+  
 volumes:
   postgres_data:
   static_volume:
