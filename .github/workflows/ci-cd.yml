@@ -42,11 +42,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # - name: Setup redis
-      #   uses: shogo82148/actions-setup-redis@v1
-      #   with:
-      #     # redis-version: latest
-      #     auto-start: "true"
+      - name: Setup redis
+        uses: shogo82148/actions-setup-redis@v1
+        with:
+          # redis-version: latest
+          auto-start: "true"
 
 
       - name: Run Tests
@@ -73,11 +73,11 @@ jobs:
           password: ${{ secrets.SSH_PASS }}
           port: ${{ secrets.SSH_PORT }}
           # add nginx commands
-          # sudo systemctl daemon-reload
-          # sudo systemctl restart nginx
           script: |
             cd /home/ubuntu/NoWaste_BackEnd
             git pull origin main
             sudo docker compose down
             sudo docker compose up -d --build
+            sudo systemctl daemon-reload
+            sudo systemctl restart nginx
 
