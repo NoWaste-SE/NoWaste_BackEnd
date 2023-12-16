@@ -22,7 +22,7 @@ services:
       - POSTGRES_PASSWORD=gen39nowaste
       - POSTGRES_DB=nowaste
     ports:
-      - 8080:8000
+      - "8080:8080"
     env_file:
       - ./NoWaste/deploy.env   
     depends_on:
