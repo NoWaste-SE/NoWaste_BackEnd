@@ -9,7 +9,7 @@ services:
       bash -c "
                python manage.py makemigrations &&
                python manage.py migrate &&
-               gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
+               gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8000"
    # python manage.py runserver 0.0.0.0:8000"
     
     volumes:
