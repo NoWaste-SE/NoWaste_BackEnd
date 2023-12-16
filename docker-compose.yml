@@ -9,8 +9,8 @@ services:
       bash -c "
                python manage.py makemigrations &&
                python manage.py migrate &&
-               gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
-   # python manage.py runserver 0.0.0.0:8000"
+               python manage.py runserver 0.0.0.0:8080"
+  # gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
     
     volumes:
       - .:/app
@@ -27,23 +27,23 @@ services:
       - ./NoWaste/deploy.env   
     depends_on:
       - db
-# - redis
+      - redis
     networks:
       - nowaste
 
 
-  # redis:
-  #   container_name: redis
-  #   image: 'bitnami/redis:latest'
-  #   ports:
-  #     - 6379:6379
-  #   environment:
-  #     - ALLOW_EMPTY_PASSWORD=yes
-  #     - REDIS_REPLICATION_MODE=master
-  #   volumes:
-  #     - redis:/bitnami/redis/data
-  #   networks:
-  #     - nowaste
+  redis:
+    container_name: redis
+    image: 'bitnami/redis:latest'
+    ports:
+      - 6379:6379
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_REPLICATION_MODE=master
+    volumes:
+      - redis:/bitnami/redis/data
+    networks:
+      - nowaste
 
 
   db:
@@ -80,7 +80,7 @@ volumes:
   static_volume:
   media_volume:
   db:
-  # redis:
+  redis:
 
 
 networks:
