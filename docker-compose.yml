@@ -29,7 +29,7 @@ services:
       - redis
     networks:
       - nowaste
-
+  # add redis
   redis:
     container_name: redis
     image: 'bitnami/redis:latest'
