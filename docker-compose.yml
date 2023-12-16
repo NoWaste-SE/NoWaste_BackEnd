@@ -20,7 +20,8 @@ services:
       - POSTGRES_USER=gen
       - POSTGRES_PASSWORD=gen39nowaste
       - POSTGRES_DB=nowaste
-
+    ports:
+      - 8000:8000
     env_file:
       - ./NoWaste/deploy.env   
     depends_on:
