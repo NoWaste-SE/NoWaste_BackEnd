@@ -9,7 +9,7 @@ services:
       bash -c "
                python manage.py makemigrations &&
                python manage.py migrate &&
-               gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8000"
+               gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
    # python manage.py runserver 0.0.0.0:8000"
     
     volumes:
@@ -22,7 +22,7 @@ services:
       - POSTGRES_PASSWORD=gen39nowaste
       - POSTGRES_DB=nowaste
     ports:
-      - 8000:8000
+      - 8080:8000
     env_file:
       - ./NoWaste/deploy.env   
     depends_on:
