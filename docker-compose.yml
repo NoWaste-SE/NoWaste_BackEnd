@@ -9,8 +9,9 @@ services:
       bash -c "
                python manage.py makemigrations &&
                python manage.py migrate &&
-               python manage.py runserver 0.0.0.0:8000"
-    #gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
+               gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
+   # python manage.py runserver 0.0.0.0:8000"
+    
     volumes:
       - .:/app
       - static_volume:/app/static
@@ -26,23 +27,23 @@ services:
       - ./NoWaste/deploy.env   
     depends_on:
       - db
-      - redis
+# - redis
     networks:
       - nowaste
 
 
-  redis:
-    container_name: redis
-    image: 'bitnami/redis:latest'
-    ports:
-      - 6379:6379
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_REPLICATION_MODE=master
-    volumes:
-      - redis:/bitnami/redis/data
-    networks:
-      - nowaste
+  # redis:
+  #   container_name: redis
+  #   image: 'bitnami/redis:latest'
+  #   ports:
+  #     - 6379:6379
+  #   environment:
+  #     - ALLOW_EMPTY_PASSWORD=yes
+  #     - REDIS_REPLICATION_MODE=master
+  #   volumes:
+  #     - redis:/bitnami/redis/data
+  #   networks:
+  #     - nowaste
 
 
   db:
@@ -60,26 +61,26 @@ services:
 
 
 
-  # nginx:
-  #   image: nginx
-  #   container_name: nginx
-  #   restart: always
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - ./default.conf:/etc/nginx/conf.d/default.conf
-  #     - static_volume:/home/app/static
-  #     - media_volume:/home/app/media
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - nowaste
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/home/app/static
+      - media_volume:/home/app/media
+    depends_on:
+      - backend
+    networks:
+      - nowaste
 
 volumes:
   static_volume:
   media_volume:
   db:
-  redis:
+  # redis:
 
 
 networks:
