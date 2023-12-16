@@ -65,7 +65,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASS }}
           port: ${{ secrets.SSH_PORT }}
-
+          # add nginx commands
           script: |
             cd /home/ubuntu/NoWaste_BackEnd
             git pull origin main
