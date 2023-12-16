@@ -25,6 +25,7 @@ services:
       - ./NoWaste/deploy.env   
     depends_on:
       - db
+      - redis
     networks:
       - nowaste
 
@@ -39,6 +40,8 @@ services:
       - REDIS_REPLICATION_MODE=master
     volumes:
       - redis:/bitnami/redis/data
+    networks:
+      - nowaste
 
 
   db:
@@ -72,9 +75,9 @@ services:
   #     - nowaste
 
 volumes:
-  postgres_data:
   static_volume:
   media_volume:
+  db:
   redis:
 
 
