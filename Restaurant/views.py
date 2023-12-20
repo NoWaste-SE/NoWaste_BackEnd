@@ -24,8 +24,8 @@ from django.http import JsonResponse
 import urllib
 from rest_framework.renderers import JSONRenderer
 from django.core import serializers
-# from profanity_check import predict, predict_prob
-# from sklearn.externals import joblib
+from profanity_check import predict, predict_prob
+from sklearn.externals import joblib
 
 def GetUserByToken(request):
     authentication = JWTAuthentication()
@@ -501,9 +501,9 @@ class CommentAPI(APIView):
         writer = Customer.objects.get(id=u.id)
         restaurant = Restaurant.objects.get(id = kwargs['restaurant_id'])
         if serializer.is_valid(raise_exception=True):
-            # profanity_prediction = predict([serializer.validated_data['text']])[0]
-            # if profanity_prediction == 1:
-            #     return Response({'error': 'Comment contains inappropriate content and cannot be saved.'}, status=status.HTTP_400_BAD_REQUEST)
+            profanity_prediction = predict([serializer.validated_data['text']])[0]
+            if profanity_prediction == 1:
+                return Response({'error': 'Comment contains inappropriate content and cannot be saved.'}, status=status.HTTP_400_BAD_REQUEST)
             new_comment, created = Comment.objects.get_or_create(writer = writer, restaurant=restaurant)
             new_comment.text = serializer.validated_data['text']
             new_comment.save()
