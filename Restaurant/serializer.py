@@ -179,9 +179,10 @@ class GetOrderSerializer(serializers.ModelSerializer):
     orderItems = OrderItemSerializer(many=True, read_only=True)
     userAddress = serializers.SerializerMethodField()
     restaurantDetails = serializers.SerializerMethodField()
+    Subtotal_Grandtotal_discount = serializers.SerializerMethodField()
     class Meta : 
         model = Order
-        fields = ('id','orderItems','restaurantDetails','userAddress','status')
+        fields = ('id','orderItems','restaurantDetails','userAddress','status','Subtotal_Grandtotal_discount')
 
         extra_kwargs = {
         'orderItems': {'read_only': True},
