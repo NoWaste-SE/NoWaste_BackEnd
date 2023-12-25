@@ -28,8 +28,8 @@ services:
     depends_on:
       - db
       # - redis
-    networks:
-      - nowaste
+    # networks:
+    #   - nowaste
 
 
   # redis:
@@ -56,8 +56,8 @@ services:
       - POSTGRES_USER=gen
       - POSTGRES_PASSWORD=gen39nowaste
       - POSTGRES_DB=nowaste
-    networks:
-      - nowaste
+    # networks:
+    #   - nowaste
 
 
 
@@ -83,5 +83,5 @@ volumes:
   # redis:
 
 
-networks:
-  nowaste:
+# networks:
+#   nowaste:
