@@ -24,3 +24,6 @@ COPY . /app/
 
 # Expose the necessary port(s)
 EXPOSE 8080
+
+# Command to run your chat service with Daphne
+CMD ["daphne", "-b","0.0.0.0", "-p", "9001", "NoWaste.asgi:application"]
