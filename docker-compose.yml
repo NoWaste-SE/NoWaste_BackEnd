@@ -59,7 +59,32 @@ services:
     networks:
       - nowaste
 
+  daphne:
+    build: .
+    image: 'daphne:latest'
+    command: bash -c "daphne -b 0.0.0.0 -p 9001 NoWaste.asgi:application"
+    ports:
+      - 9001:9001
+    environment:
+      - REDIS_HOST=redis
+    networks:
+      - nowaste
+    depends_on:
+      - redis
+    links:
+      - redis
 
+  worker:
+    image: "worker:latest"
+    command: bash -c "python manage.py runworker"
+    environment:
+      - REDIS_HOST=redis
+    networks:
+      - nowaste
+    depends_on:
+      - redis
+    links:
+      - redis
 
   # nginx:
   #   image: nginx
