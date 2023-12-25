@@ -74,17 +74,17 @@ services:
     links:
       - redis
 
-  worker:
-    image: "worker:latest"
-    command: bash -c "python manage.py runworker"
-    environment:
-      - REDIS_HOST=redis
-    networks:
-      - nowaste
-    depends_on:
-      - redis
-    links:
-      - redis
+  # worker:
+  #   image: "worker:latest"
+  #   command: bash -c "python manage.py runworker"
+  #   environment:
+  #     - REDIS_HOST=redis
+  #   networks:
+  #     - nowaste
+  #   depends_on:
+  #     - redis
+  #   links:
+  #     - redis
 
   # nginx:
   #   image: nginx
