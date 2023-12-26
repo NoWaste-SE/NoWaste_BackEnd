@@ -817,3 +817,71 @@ class RecentlyViewedRestaurantsCustomerViewTest(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+
+class FoodViewSetTestCase(TestCase):
+    def setUp(self):
+        self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
+        self.restaurant = Restaurant.objects.create(name='Test Restaurant', number='123', manager=self.manager)
+        self.food = Food.objects.create(name='Test Food', price=10.0, restaurant=self.restaurant)
+        self.client = APIClient()
+
+    def test_get_queryset(self):
+        url = reverse('restaurant-food-list', kwargs={'restaurant__id': self.restaurant.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], self.food.name)
+
+    def test_patch_food(self):
+        new_name = 'Updated Food Name'
+        data = {'name': new_name}
+        url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': self.food.id})
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_food = Food.objects.get(id=self.food.id)
+        self.assertEqual(updated_food.name, new_name)
+
+    # def test_patch_invalid_data(self):
+    #     invalid_data = {'invalid_field': 'Invalid Value'}
+    #     url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': self.food.id})
+    #     response = self.client.patch(url, invalid_data, format='json')
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_nonexistent_food(self):
+        nonexistent_id = 999
+        url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': nonexistent_id})
+        response = self.client.patch(url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_food(self):
+        data = {'name': 'New Food', 'restaurant_id': self.restaurant.id}
+        url = reverse('restaurant-food-list', kwargs={'restaurant__id': self.restaurant.id})
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        new_food = Food.objects.get(id=response.data['id'])
+        self.assertEqual(new_food.name, 'New Food')
+
+    def test_create_food_invalid_data(self):
+        invalid_data = {'invalid_field': 'Invalid Value'}
+        url = reverse('restaurant-food-list', kwargs={'restaurant__id': self.restaurant.id})
+        response = self.client.post(url, invalid_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_food_detail(self):
+        url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': self.food.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.food.name)
+
+    def test_get_food_detail_nonexistent_food(self):
+        nonexistent_id = 999
+        url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': nonexistent_id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_food(self):
+        url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': self.food.id})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        with self.assertRaises(Food.DoesNotExist):
+            Food.objects.get(id=self.food.id)
