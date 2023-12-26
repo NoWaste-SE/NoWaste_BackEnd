@@ -112,6 +112,8 @@ services:
       - 8000:8000
     env_file:
       - ./NoWaste/deploy.env   
+    links:
+      - db:db
     depends_on:
       - db
       - redis
@@ -136,8 +138,8 @@ services:
   db:
     container_name: db
     image: postgres:13.1-alpine
-    ports:
-      - 5432:5432
+    expose:
+      - "5432"
     volumes:
       - db:/var/lib/postgresql/data/
     environment:
@@ -174,3 +176,4 @@ volumes:
 
 networks:
   nowaste:
+    driver: bridge
