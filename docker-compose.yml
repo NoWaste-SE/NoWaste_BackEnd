@@ -136,6 +136,8 @@ services:
   db:
     container_name: db
     image: postgres:13.1-alpine
+    ports:
+      - 5432:5432
     volumes:
       - db:/var/lib/postgresql/data/
     environment:
