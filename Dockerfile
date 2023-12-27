@@ -23,4 +23,6 @@ RUN timeout 3000 pip install -r requirements.txt
 COPY . /app/
 
 # Expose the necessary port(s)
+
 EXPOSE 8000
+
