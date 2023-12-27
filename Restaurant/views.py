@@ -561,7 +561,7 @@ class SearchNearestRestaurant(mixins.ListModelMixin):
             for rest in restaurants:
                 if (rest.lat == lat,rest.lon == long):
                     result.append(rest)
-        data = serializers.serialize('json', result[:5])
+        data = serializers.serialize('json', result[:6])
         return HttpResponse(data, content_type="application/json")
 
 '''a function API for retrieving address according to the lat and long'''
