@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /app
 
-RUN pip install gunicorn
+# RUN pip install gunicorn
 
 # Install system dependencies necessary for psycopg2
 RUN apt-get update && apt-get install -y libpq-dev gcc
