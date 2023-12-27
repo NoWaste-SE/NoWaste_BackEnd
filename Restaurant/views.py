@@ -554,7 +554,7 @@ class SearchNearestRestaurant(mixins.ListModelMixin):
         des_dist_list = []
         for i in range(des_len):
             des_dist_list.append((elements[i]['distance']['value'],destination_addresses[i]))
-        sorted_list = sorted(des_dist_list, key=lambda x: x[1])[:5]
+        sorted_list = sorted(des_dist_list, key=lambda x: x[1])[:6]
         result = []
         for e in sorted_list:
             lat ,long = e[1].split(',')
