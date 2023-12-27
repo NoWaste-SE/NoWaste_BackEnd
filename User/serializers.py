@@ -124,7 +124,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ('name', 'email' ,'address','wallet_balance','gender','phone_number','date_of_birth','lat','lon','password')
+        fields = ('name', 'role', 'email' ,'address','wallet_balance','gender','phone_number','date_of_birth','lat','lon','password')
         extra_kwargs = {
             'wallet_balance': {'read_only': True},
             'name' : {'required': False, 'allow_blank': True},
@@ -151,11 +151,14 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         print(instance)
         instance.email = validated_data.get('email', instance.email)
         instance.name = validated_data.get('name', instance.name)
-        # print("(((((((((((((((((())))))))))))))))))")
-        # print(validated_data['username'])
-        instance.username = validated_data.get('username', instance.username)
-        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-        print(instance.username)
+        instance.address = validated_data.get('address', instance.address)
+        instance.wallet_balance = validated_data.get('wallet_balance', instance.wallet_balance)
+        instance.gender = validated_data.get('gender', instance.gender)
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.date_of_birth = validated_data.get('date_of_birth', instance.date_of_birth)
+        instance.lat = validated_data.get('lat', instance.lat)
+        instance.lon = validated_data.get('lon', instance.lon)
+        instance.role = validated_data.get('role', instance.role)
         password = validated_data.get('password',instance.password)
         if password:
             instance.set_password(password)
