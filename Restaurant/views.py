@@ -549,7 +549,7 @@ class SearchNearestRestaurant(mixins.ListModelMixin):
         data = response.json()
         elements = data['rows'][0]['elements']
         destination_addresses = data['destination_addresses']
-        dists = [element['distance']['value'] for element in elements]
+        # dists = [element['distance']['value'] for element in elements]
         des_len = len(destination_addresses)
         des_dist_list = []
         for i in range(des_len):
@@ -561,7 +561,7 @@ class SearchNearestRestaurant(mixins.ListModelMixin):
             for rest in restaurants:
                 if (rest.lat == lat,rest.lon == long):
                     result.append(rest)
-        data = serializers.serialize('json', result)
+        data = serializers.serialize('json', result[:5])
         return HttpResponse(data, content_type="application/json")
 
 '''a function API for retrieving address according to the lat and long'''
