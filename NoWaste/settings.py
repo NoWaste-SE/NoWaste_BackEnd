@@ -38,6 +38,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    "corsheaders",
     "channels",
     "daphne",
     "django.contrib.admin",
@@ -47,7 +48,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    'corsheaders',
     "User",
     "Restaurant",
     'rest_framework.authtoken',
@@ -63,7 +63,7 @@ REST_FRAMEWORK = {
     ],
 }
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -198,8 +198,39 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'gen39.nowaste@gmail.com'
 EMAIL_HOST_PASSWORD = 'kjdkhcyjbllacpnv'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://nowaste39.ir",
+    "https://nowaste39.ir",
+]
 
+CORS_ALLOW_METHODS = (
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+)
+
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+)
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_PRIVATE_NETWORK = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://nowaste39.ir",
+    "https://nowaste39.ir",
+]
 
 CHANNEL_LAYERS = {
     "default": {
