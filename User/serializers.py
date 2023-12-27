@@ -4,6 +4,7 @@ from .models import *
 from cities_light.models import Country, City
 from Restaurant.models import Restaurant, Food, OrderItem2, Order2
 from Restaurant.serializer import RestaurantSerializer, FoodSerializer
+from django.contrib.auth.hashers import make_password
 
 class BaseCreateUserSerializer(serializers.ModelSerializer): 
     role = serializers.CharField(max_length=255, default="default")
@@ -123,13 +124,13 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ('username', 'name', 'email' ,'address','wallet_balance','gender','phone_number','date_of_birth','lat','lon')
+        fields = ('name', 'role', 'email' ,'address','wallet_balance','gender','phone_number','date_of_birth','lat','lon','password')
         extra_kwargs = {
             'wallet_balance': {'read_only': True},
-            'username' :{'required' : False, 'allow_blank': True},
             'name' : {'required': False, 'allow_blank': True},
             'email' : {'required': False,'allow_null': True},
-            'address' : {'required': False,'allow_null': True}
+            'address' : {'required': False,'allow_null': True},
+            'password' : {'required': False,'allow_null': True}
         }
 
     def validate_email(self, new_email):
@@ -145,12 +146,23 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         return value
 
     def update(self, instance, validated_data):
+        # Customer.objects.filter(id = instance.id).update(username='some value')
+        print("******************************")
+        print(instance)
         instance.email = validated_data.get('email', instance.email)
         instance.name = validated_data.get('name', instance.name)
-        instance.username = validated_data.get('username', instance.username)
-
+        instance.address = validated_data.get('address', instance.address)
+        instance.wallet_balance = validated_data.get('wallet_balance', instance.wallet_balance)
+        instance.gender = validated_data.get('gender', instance.gender)
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.date_of_birth = validated_data.get('date_of_birth', instance.date_of_birth)
+        instance.lat = validated_data.get('lat', instance.lat)
+        instance.lon = validated_data.get('lon', instance.lon)
+        instance.role = validated_data.get('role', instance.role)
+        password = validated_data.get('password',instance.password)
+        if password:
+            instance.set_password(password)
         instance.save()
-
         return instance
     
 class RateRestaurantSerializer(serializers.ModelSerializer):

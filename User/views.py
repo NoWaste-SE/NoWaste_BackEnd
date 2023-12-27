@@ -242,7 +242,7 @@ class ChangePasswordView(generics.UpdateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ChangePasswordSerializer
-    def put(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         user = request.user
         if(user.id != self.kwargs['pk']):
             return Response({"message": "Unathorized!"},status=status.HTTP_401_UNAUTHORIZED)
@@ -261,15 +261,55 @@ class UpdateRetrieveProfileView(generics.RetrieveUpdateAPIView):
         else :
             return UpdateUserSerializer
     lookup_field = 'id'
+    # def patch(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     # print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    #     # print(instance.password)
+    #     for key , value in request.data.items():
+    #         print(key , value)
+            
+    #         setattr(instance,key,value)
+    #     # print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    #     # print(request.data)
+    #     # if "password" in request.data:
+    #     # password = request.data"password")
+    #     # instance.set_password(password)
+    #     # print(instance)
+    #     serializer = self.get_serializer(instance, data=request.data)
+    #     print("*******************")
+    #     serializer.is_valid(raise_exception=True)
+    #     # serializer.set_password(instance['password'])
+    #     # print(serializer.validated_data)
+    #     serializer.save()
+    #     return Response(serializer.data)
+    # def patch(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     serializer = self.get_serializer(instance, data=request.data, partial=True)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     return Response(serializer.data)
+    # def put(self, request, *args, **kwargs):
+    #     user = request.user
+    #     if(user.id != self.kwargs['id']):
+    #         return Response({"message": "Unathorized!"},status=status.HTTP_401_UNAUTHORIZED)
+    #     # super().update(request, *args, **kwargs) 
+    #     # return Response({"message" :"Password changed successfully!"},status= status.HTTP_200_OK)
+    #     instance = self.get_object()
+    #     serializer = self.get_serializer(instance, data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     return Response(serializer.data)
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
-        for key , value in request.data.items():
-            print(key , value)
-            setattr(instance,key,value)
-        serializer = self.get_serializer(instance, data=request.data)
+        
+        # Use the 'partial' argument when creating the serializer instance
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        
+        # Validate and save the serializer
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+    
+        return Response(serializer.data, status=status.HTTP_200_OK)
     def get(self,request,id):
         if ( request.user.id != id ):
             return Response({"message": "Unathorized!"},status= status.HTTP_401_UNAUTHORIZED)
