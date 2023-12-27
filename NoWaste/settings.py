@@ -119,7 +119,7 @@ DATABASES = {
         'PORT': '5432',  
         
         # 'ENGINE': 'django.db.backends.postgresql',
-        # 'NAME': 'nowaste',
+        # 'NAME': 'postgres',
         # 'USER': 'postgres',
         # 'PASSWORD': 'newview-1',
         # 'HOST': 'localhost', 
@@ -216,6 +216,6 @@ STATICFILES_DIRS = [
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=2),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
