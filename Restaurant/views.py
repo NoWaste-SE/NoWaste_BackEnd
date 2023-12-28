@@ -459,6 +459,8 @@ class RestaurantOrderViewAPI(generics.ListAPIView):
             print("&&&&&&&&&&&&&&&&&&&&&&&&&")
             print(restaurant)
             orders = restaurant.orders.all()
+            print("^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+            print(orders)
             for order in orders:
                 ordersList.append(order)
         print("****************************")
