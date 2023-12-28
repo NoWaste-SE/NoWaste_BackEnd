@@ -28,7 +28,8 @@ class Food(models.Model):
 
 class Cart(models.Model):
     user = models.ForeignKey(Customer, on_delete=models.CASCADE)
-
+    def __str__(self) -> str:
+        return self.user.name +"  Cart"+ str(self.id)
         
 class Order(models.Model):
     status = (

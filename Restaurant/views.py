@@ -24,7 +24,7 @@ from django.http import JsonResponse
 import urllib
 from rest_framework.renderers import JSONRenderer
 from django.core import serializers
-from profanity_check import predict, predict_prob
+# from profanity_check import predict, predict_prob
 
 def GetUserByToken(request):
     authentication = JWTAuthentication()
@@ -452,11 +452,17 @@ class RestaurantOrderViewAPI(generics.ListAPIView):
     def get_queryset(self):
         # Listing Orders of a restaurant(the resturanst are unified by their manager id)
         queryset = Restaurant.objects.filter(manager_id = self.kwargs['manager_id']).prefetch_related('orders')
+        print("****************************")
+        print(queryset)
         ordersList = []
         for restaurant in queryset:
+            print("&&&&&&&&&&&&&&&&&&&&&&&&&")
+            print(restaurant)
             orders = restaurant.orders.all()
             for order in orders:
                 ordersList.append(order)
+        print("****************************")
+        print(ordersList)
         return ordersList
 
 '''class for Updating the Order Status'''
@@ -499,14 +505,14 @@ class CommentAPI(APIView):
         u = GetUserByToken(request)
         writer = Customer.objects.get(id=u.id)
         restaurant = Restaurant.objects.get(id = kwargs['restaurant_id'])
-        if serializer.is_valid(raise_exception=True):
-            profanity_prediction = predict([serializer.validated_data['text']])[0]
-            if profanity_prediction == 1:
-                return Response({'error': 'Comment contains inappropriate content and cannot be saved.'}, status=status.HTTP_400_BAD_REQUEST)
-            new_comment, created = Comment.objects.get_or_create(writer = writer, restaurant=restaurant)
-            new_comment.text = serializer.validated_data['text']
-            new_comment.save()
-            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        # if serializer.is_valid(raise_exception=True):
+        #     profanity_prediction = predict([serializer.validated_data['text']])[0]
+        #     if profanity_prediction == 1:
+        #         return Response({'error': 'Comment contains inappropriate content and cannot be saved.'}, status=status.HTTP_400_BAD_REQUEST)
+        #     new_comment, created = Comment.objects.get_or_create(writer = writer, restaurant=restaurant)
+        #     new_comment.text = serializer.validated_data['text']
+        #     new_comment.save()
+        #     return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request, *args, **kwargs):

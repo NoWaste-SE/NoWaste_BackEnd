@@ -30,7 +30,13 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ('email',)
     filter_horizontal = ()
     
+    
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+
     def save_model(self, request, obj, form, change):
+        print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(obj)
         # Hash the password before saving the user model
         obj.set_password(obj.password)
         super().save_model(request, obj, form, change)
@@ -40,12 +46,21 @@ class RestaurantManagerAdmin(admin.ModelAdmin):
     list_display = ['name', 'email']
     list_filter = ['name']
     search_fields = ('email', 'name')
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
 
+    def save_model(self, request, obj, form, change):
+        print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(obj)
+        # Hash the password before saving the user model
+        obj.set_password(obj.password)
+        super().save_model(request, obj, form, change)
 class RestaurantAdmin(admin.ModelAdmin):
     ordering = ['name','rate']
     list_display = ['name', 'manager']
     list_filter = ['rate', 'manager','name']
     search_fields = ('name',)
+
 
 class CustomerAdmin(admin.ModelAdmin):
     ordering = ['name']
@@ -57,6 +72,15 @@ class CustomerAdmin(admin.ModelAdmin):
         else:
             return format_html (f'<span style="color:purple">{obj.gender}</span>')
     search_fields = ('name','email')
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+
+    def save_model(self, request, obj, form, change):
+        print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(obj)
+        # Hash the password before saving the user model
+        obj.set_password(obj.password)
+        super().save_model(request, obj, form, change)
 
 class VC_CodesAdmin(admin.ModelAdmin):
     ordering = ['name', 'vc_code']
