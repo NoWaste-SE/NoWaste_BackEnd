@@ -137,13 +137,17 @@ services:
       - redis:/bitnami/redis/data
     networks:
       - nowaste
+    depends_on:
+      - db
+    links:
+      - db
 
 
   db:
     container_name: db
     image: postgres:13.1-alpine
-    expose:
-      - "5432"
+    ports:
+      - 5432:5432
     volumes:
       - db:/var/lib/postgresql/data/
     environment:
@@ -169,6 +173,7 @@ services:
       - redis
     links:
       - redis
+      - db
   # worker:
   #   image: "worker:latest"
   #   command: bash -c "python manage.py runworker"
