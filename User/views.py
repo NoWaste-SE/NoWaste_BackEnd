@@ -116,10 +116,13 @@ class LoginView(TokenObtainPairView):
             email = request.data.get('email')
             password = request.data.get('password')
             try :
+                print("*********************************************")
+                print(email)
                 user = MyAuthor.objects.get(email = email)
 
             except Exception as error :
-                return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+                # return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'error': 'Invalid email or password'}, status=status.HTTP_400_BAD_REQUEST)
             if user is not None and user.check_password(password):
                 id = user.id
                 if user.role == "customer":
@@ -137,9 +140,13 @@ class LoginView(TokenObtainPairView):
                     return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'role':user.role})
                 else :
                     r = RestaurantManager.objects.get(email = email)
+                    print("*********************************************")
+                    print(r)
                     return Response({'access_token': access_token,'refresh_token':refresh_token,'id' : user.id, 'role':user.role, 'name':r.name})
             else:
-                return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+                # return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'error': 'Invalid email or password'}, status=status.HTTP_400_BAD_REQUEST)
+
         else:
             return response
     def get(self,request):

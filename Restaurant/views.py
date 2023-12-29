@@ -451,10 +451,10 @@ class RestaurantOrderViewAPI(generics.ListAPIView):
     serializer_class = RestaurantOrderViewSerializer
     def get_queryset(self):
         # Listing Orders of a restaurant(the resturanst are unified by their manager id)
-        queryset = Restaurant.objects.filter(manager_id = self.kwargs['manager_id']).prefetch_related('orders')
+        queryset = Restaurant.objects.filter(manager_id = self.kwargs['manager_id'])
         ordersList = []
         for restaurant in queryset:
-            orders = restaurant.orders.all()
+            orders = (Order.objects.filter(restaurant_id = restaurant.id))
             for order in orders:
                 ordersList.append(order)
         return ordersList
