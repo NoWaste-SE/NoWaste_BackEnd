@@ -232,13 +232,18 @@ CSRF_TRUSTED_ORIGINS = [
     "https://nowaste39.ir",
 ]
 
+
+REDIS_HOST = os.environ.get('REDIS_HOST', '127.0.0.1')
+
 CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1" , 6379)],
-        },
-    },
+    
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts' : [(REDIS_HOST, 6379)],
+        }
+    }
+    
 }
 
 STATICFILES_DIRS = [
@@ -250,3 +255,27 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': './django.log',  # Specify the path to your log file
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['file', 'console'],
+        'level': 'INFO',
+    },
+    'channels': {
+        'handlers': ['file', 'console'],
+        'level': 'INFO',
+    },
+}
+
