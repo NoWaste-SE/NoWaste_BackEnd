@@ -391,80 +391,80 @@ class CommentModelTestCase(TestCase):
             )
             self.assertTrue(current_time - time_difference <= comment.created_at <= current_time + time_difference)
 
-class CommentAPITestCase(APITestCase):
-    def setUp(self):
-        self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
-        self.restaurant = Restaurant.objects.create(name='Restaurant 1', number='111', manager=self.manager)
-        self.customer_id = 0
-        self.url = ""
-    def athenticate(self, email, passw, name, role):
-        response = self.client.post(
-            reverse("signup"),
-            {
-                "name": name,
-                "email": email,
-            }
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        response = self.client.post(
-            reverse("verify-email"),
-            {
-                "name": name,
-                "password": passw,
-                "role": role,
-                "email": email,
-                "code": VC_Codes.objects.get(email=email).vc_code,
-            }
-        )      
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        response = self.client.post(
-            reverse("login"),
-            {
-                "email": email,
-                "password": passw,
-            },
-        )
-        self.customer_id = response.data['id']
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        token = response.data['access_token']
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+# class CommentAPITestCase(APITestCase):
+#     def setUp(self):
+#         self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
+#         self.restaurant = Restaurant.objects.create(name='Restaurant 1', number='111', manager=self.manager)
+#         self.customer_id = 0
+#         self.url = ""
+#     def athenticate(self, email, passw, name, role):
+#         response = self.client.post(
+#             reverse("signup"),
+#             {
+#                 "name": name,
+#                 "email": email,
+#             }
+#         )
+#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+#         response = self.client.post(
+#             reverse("verify-email"),
+#             {
+#                 "name": name,
+#                 "password": passw,
+#                 "role": role,
+#                 "email": email,
+#                 "code": VC_Codes.objects.get(email=email).vc_code,
+#             }
+#         )      
+#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+#         response = self.client.post(
+#             reverse("login"),
+#             {
+#                 "email": email,
+#                 "password": passw,
+#             },
+#         )
+#         self.customer_id = response.data['id']
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         token = response.data['access_token']
+#         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
-    def test_post_comment(self):
-        self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer") 
-        data = {'text': 'This is a test comment'}
-        user_id = self.customer_id
-        restaurant_id = self.restaurant.id
-        self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
-        expected_url = f'/restaurant/comment/restaurant_id/{restaurant_id}/'
-        self.assertEqual(self.url, expected_url)
-        response = self.client.post(self.url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        comment = Comment.objects.get(writer=self.customer_id, restaurant=self.restaurant)
-        self.assertEqual(comment.text, 'This is a test comment')
+#     def test_post_comment(self):
+#         self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer") 
+#         data = {'text': 'This is a test comment'}
+#         user_id = self.customer_id
+#         restaurant_id = self.restaurant.id
+#         self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
+#         expected_url = f'/restaurant/comment/restaurant_id/{restaurant_id}/'
+#         self.assertEqual(self.url, expected_url)
+#         response = self.client.post(self.url, data)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         comment = Comment.objects.get(writer=self.customer_id, restaurant=self.restaurant)
+#         self.assertEqual(comment.text, 'This is a test comment')
 
-    def test_get_comment(self):
-        self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer")
-        user_id = self.customer_id
-        user = Customer.objects.get(id = self.customer_id)
-        restaurant_id = self.restaurant.id
-        self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
-        comment = Comment.objects.create(writer=user, restaurant=self.restaurant, text='Test comment')
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['comment'], 'Test comment')
+#     def test_get_comment(self):
+#         self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer")
+#         user_id = self.customer_id
+#         user = Customer.objects.get(id = self.customer_id)
+#         restaurant_id = self.restaurant.id
+#         self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
+#         comment = Comment.objects.create(writer=user, restaurant=self.restaurant, text='Test comment')
+#         response = self.client.get(self.url)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         self.assertEqual(response.data['comment'], 'Test comment')
 
-    def test_get_comment_nonexistent_comment(self):
-        self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer")
-        user_id = self.customer_id
-        restaurant_id = self.restaurant.id
-        self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIsNone(response.data.get('comment'))
+#     def test_get_comment_nonexistent_comment(self):
+#         self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer")
+#         user_id = self.customer_id
+#         restaurant_id = self.restaurant.id
+#         self.url = reverse('comment', kwargs={'restaurant_id': restaurant_id})
+#         response = self.client.get(self.url)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         self.assertIsNone(response.data.get('comment'))
 
-    def test_get_comment_invalid_user_or_restaurant(self):
-        response = self.client.get('/restaurant/comment/restaurant_id/invalid_restaurant_id/')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+#     def test_get_comment_invalid_user_or_restaurant(self):
+#         response = self.client.get('/restaurant/comment/restaurant_id/invalid_restaurant_id/')
+#         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 

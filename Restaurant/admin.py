@@ -10,9 +10,9 @@ class FoodAdmin(admin.ModelAdmin):
 
 class OrderAdmin(admin.ModelAdmin):
     ordering = ['created_at', 'userId']
-    list_display = ['id', 'userId', 'restaurant', 'status']
-    list_filter = ['status','restaurant', 'userId']
-    search_fields = ('id',)
+    list_display = ['id', 'userId', 'restaurant', 'status','cart']
+    list_filter = ['status','restaurant', 'userId','cart']
+    search_fields = ('id','cart')
 
 class OrderItemAdmin(admin.ModelAdmin):
     ordering = ['quantity']
@@ -27,6 +27,11 @@ class CommentAdmin(admin.ModelAdmin):
     list_filter = ['writer','restaurant']
     search_fields = ('writer',)
 
+class CartAdmin(admin.ModelAdmin):
+    ordering = ['user']
+    list_display = ['user']
+    list_filter = ['user']
+    search_fields = ('user',)
 
 admin.site.register(Food,FoodAdmin)
 admin.site.register(Order, OrderAdmin)
@@ -37,6 +42,6 @@ admin.site.register(Comment, CommentAdmin)
 admin.site.register(Order2)
 admin.site.register(OrderItem2)
 admin.site.register(RecentlyViewedRestaurant)
-admin.site.register(Cart)
+admin.site.register(Cart,CartAdmin)
 # admin.site.register(OrderManager)
 # admin.site.register(OrderItemManager)
