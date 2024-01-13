@@ -1,129 +1,19 @@
-# version: "3.9"
-
-# services:
-#   backend:
-#     build: .
-#     container_name: backend
-#     # python manage.py loaddata user_data.json &&
-#     command: >
-#       bash -c "
-#                python manage.py makemigrations &&
-#                python manage.py migrate &&
-#                python manage.py runserver 0.0.0.0:8080"
-#   # gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
-    
-#     volumes:
-#       - .:/app
-#       - static_volume:/app/static
-#       - media_volume:/app/media
-#     environment:
-#       - POSTGRES_HOST_AUTH_METHOD=trust
-#       - POSTGRES_USER=gen
-#       - POSTGRES_PASSWORD=gen39nowaste
-#       - POSTGRES_DB=nowaste
-#     ports:
-#       - "8080:8080"
-#     env_file:
-#       - ./NoWaste/deploy.env   
-#     depends_on:
-#       - db
-#       # - redis
-#     networks:
-#       - nowaste
-
-
-#   # redis:
-#   #   container_name: redis
-#   #   image: 'bitnami/redis:latest'
-#   #   ports:
-#   #     - 6379:6379
-#   #   environment:
-#   #     - ALLOW_EMPTY_PASSWORD=yes
-#   #     - REDIS_REPLICATION_MODE=master
-#   #   volumes:
-#   #     - redis:/bitnami/redis/data
-#   #   networks:
-#   #     - nowaste
-
-
-
-
-#   db:
-#     container_name: db
-#     image: postgres:13.1-alpine
-#     volumes:
-#       - db:/var/lib/postgresql/data/
-#     environment:
-#       - POSTGRES_HOST_AUTH_METHOD=trust
-#       - POSTGRES_USER=gen
-#       - POSTGRES_PASSWORD=gen39nowaste
-#       - POSTGRES_DB=nowaste
-#     networks:
-#       - nowaste
-
-
-
-#   # nginx:
-#   #   image: nginx
-#   #   container_name: nginx
-#   #   restart: always
-#   #   ports:
-#   #     - "80:80"
-#   #   volumes:
-#   #     - ./default.conf:/etc/nginx/conf.d/default.conf
-#   #     - static_volume:/home/app/static
-#   #     - media_volume:/home/app/media
-#   #   depends_on:
-#   #     - backend
-#   #   networks:
-#   #     - nowaste
-
-# volumes:
-#   static_volume:
-#   media_volume:
-#   db:
-#   # redis:
-
-
-# networks:
-#   nowaste:
-
 version: "3.9"
-
 services:
-  backend:
-    build: .
-    container_name: backend
-    # python manage.py loaddata user_data.json &&
-    command: >
-      bash -c "
-               python manage.py makemigrations &&
-               python manage.py migrate &&
-               python manage.py runserver 0.0.0.0:8000"
-    #gunicorn NoWaste.wsgi:application --bind 0.0.0.0:8080"
+  db:
+    container_name: db
+    image: postgres:13.1-alpine
+    expose:
+      - 5432:5432
     volumes:
-      - .:/app
-      - static_volume:/app/static
-      - media_volume:/app/media
+      - db:/var/lib/postgresql/data/
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
       - POSTGRES_USER=gen
       - POSTGRES_PASSWORD=gen39nowaste
       - POSTGRES_DB=nowaste
-      - REDIS_HOST=redis
-    ports:
-      - 8000:8000
-    env_file:
-      - ./NoWaste/deploy.env   
-    links:
-      - db:db
-    depends_on:
-      - db
-      - redis
-        # - daphne  
     networks:
       - nowaste
-
 
   redis:
     container_name: redis
@@ -138,70 +28,40 @@ services:
     networks:
       - nowaste
 
-
-  db:
-    container_name: db
-    image: postgres:13.1-alpine
-    ports:
-      - 5432:5432
+  backend:
+    build: .
+    container_name: backend
+    command: >
+      bash -c "
+               python manage.py makemigrations &&
+               python manage.py migrate &&
+               python manage.py runserver 0.0.0.0:8000"
     volumes:
-      - db:/var/lib/postgresql/data/
+      - .:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
       - POSTGRES_USER=gen
       - POSTGRES_PASSWORD=gen39nowaste
       - POSTGRES_DB=nowaste
+    ports:
+      - 8000:8000
+    env_file:
+      - ./NoWaste/deploy.env   
+    links:
+      - db:db
+    depends_on:
+      - db
+      - redis
     networks:
       - nowaste
-
-        #  daphne:
-        #    build: .
-        #    container_name: daphne
-        #image: 'daphne:latest'
-        #    command: bash -c "daphne -b 0.0.0.0 -p 9001 NoWaste.asgi:application"
-        #   ports:
-        #  - 9001:9001
-        #environment:
-        #   - REDIS_HOST=redis
-        # networks:
-        # - nowaste
-        #depends_on:
-        # - redis
-        # links:
-        #- redis
-  # worker:
-  #   image: "worker:latest"
-  #   command: bash -c "python manage.py runworker"
-  #   environment:
-  #     - REDIS_HOST=redis
-  #   networks:
-  #     - nowaste
-  #   depends_on:
-  #     - redis
-  #   links:
-  #     - redis
-
-  # nginx:
-  #   image: nginx
-  #   container_name: nginx
-  #   restart: always
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - ./default.conf:/etc/nginx/conf.d/default.conf
-  #     - static_volume:/home/app/static
-  #     - media_volume:/home/app/media
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - nowaste
-
+      
 volumes:
   static_volume:
   media_volume:
   db:
   redis:
-
 
 networks:
   nowaste:
