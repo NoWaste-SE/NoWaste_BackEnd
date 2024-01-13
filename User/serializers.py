@@ -129,8 +129,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
             'wallet_balance': {'read_only': True},
             'name' : {'required': False, 'allow_blank': True},
             'email' : {'required': False,'allow_null': True},
-            'address' : {'required': False,'allow_null': True},
-            'password' : {'required': False,'allow_null': True}
+            'address' : {'required': False,'allow_null': True}
         }
 
     def validate_email(self, new_email):
@@ -159,9 +158,9 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         instance.lat = validated_data.get('lat', instance.lat)
         instance.lon = validated_data.get('lon', instance.lon)
         instance.role = validated_data.get('role', instance.role)
-        password = validated_data.get('password',instance.password)
-        if password:
-            instance.set_password(password)
+        # password = validated_data.get('password',instance.password)
+        # if password:
+        #     instance.set_password(password)
         instance.save()
         return instance
     

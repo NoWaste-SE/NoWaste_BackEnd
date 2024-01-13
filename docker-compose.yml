@@ -4,7 +4,7 @@ services:
     container_name: db
     image: postgres:13.1-alpine
     expose:
-      - "5432"
+      - 5432:5432
     volumes:
       - db:/var/lib/postgresql/data/
     environment:
@@ -56,13 +56,12 @@ services:
       - redis
     networks:
       - nowaste
-
+      
 volumes:
   static_volume:
   media_volume:
   db:
   redis:
-
 
 networks:
   nowaste:
