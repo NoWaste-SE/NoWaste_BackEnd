@@ -445,7 +445,7 @@ class CustomerOrderViewAPI(generics.ListAPIView):
         return Order.objects.filter(userId_id=self.kwargs['user_id']).select_related('restaurant')
 
 '''class for Listing Orders of a restaurant'''       
-class RestaurantOrderViewAPI(generics.ListAPIView):
+class RestaurantManagerOrderViewAPI(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = RestaurantOrderViewSerializer
