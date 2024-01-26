@@ -225,7 +225,7 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_created_at_date(self, comment :Comment):
         return str(comment.created_at)[:10]
     def get_order_foods(self, comment: Comment):
-        order_items = comment.order.order_orderItems.all()
+        order_items = comment.order.orderItems.all()
         food_names = [item.food.name for item in order_items]
         return food_names
     writer_username = serializers.CharField(source='writer.username', read_only=True)

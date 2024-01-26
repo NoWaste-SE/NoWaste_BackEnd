@@ -535,7 +535,6 @@ class RestaurantCommentListAPIView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         restaurant_id = self.kwargs['restaurant_id']
         comments = Comment.objects.filter(restaurant_id=restaurant_id)
-        print("111111")
         serializer = self.get_serializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

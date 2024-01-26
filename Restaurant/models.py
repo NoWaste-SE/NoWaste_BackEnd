@@ -51,7 +51,7 @@ class Order(models.Model):
 class OrderItem(models.Model):
     food = models.ForeignKey(Food,on_delete=models.DO_NOTHING,related_name="orderItems")
     quantity = models.IntegerField(default= 0)
-    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="order_orderItems")
+    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="orderItems")
 
 class Comment(models.Model):
     restaurant = models.ForeignKey(Restaurant,on_delete=models.CASCADE,related_name="comments")
