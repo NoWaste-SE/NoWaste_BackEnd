@@ -58,7 +58,7 @@ class Comment(models.Model):
     writer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     text = models.CharField(max_length=512, default="", blank=True)
     created_at = models.DateTimeField(auto_now_add= True)
-    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="comments", default=None)
+    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="comments", default=None) #order
     class Meta:
         ordering = ['-created_at']
     def __str__(self) -> str:
