@@ -500,10 +500,14 @@ class CommentAPI(APIView):
         writer = Customer.objects.get(id=u.id)
         restaurant = Restaurant.objects.get(id = kwargs['restaurant_id'])
         if serializer.is_valid(raise_exception=True):
+            try:
+                order = Order.objects.get(id = kwargs['order_id'])
+            except:
+                return Response("Order does not exist.", status=status.HTTP_404_NOT_FOUND)
             profanity_prediction = predict([serializer.validated_data['text']])[0]
             if profanity_prediction == 1:
                 return Response({'error': 'Comment contains inappropriate content and cannot be saved.'}, status=status.HTTP_400_BAD_REQUEST)
-            new_comment, created = Comment.objects.get_or_create(writer = writer, restaurant=restaurant)
+            new_comment, created = Comment.objects.get_or_create(writer = writer, restaurant=restaurant, order=order)
             new_comment.text = serializer.validated_data['text']
             new_comment.save()
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
@@ -513,10 +517,11 @@ class CommentAPI(APIView):
         serializer = CommentSerializer()
         u = GetUserByToken(request)
         writer = Customer.objects.get(id=u.id)
-        restaurant = Restaurant.objects.get(id = kwargs['restaurant_id'])
         try:
-            comment = Comment.objects.get(writer=writer, restaurant=restaurant)
-            return Response({'comment': comment.text}, status=status.HTTP_200_OK)
+            restaurant = Restaurant.objects.get(id = kwargs['restaurant_id'])
+            order = Order.objects.get(id = kwargs['order_id'])
+            comment = Comment.objects.get(writer=writer, restaurant=restaurant, order=order)
+            return Response({'text': comment.text}, status=status.HTTP_200_OK)
         except:
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -530,6 +535,7 @@ class RestaurantCommentListAPIView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         restaurant_id = self.kwargs['restaurant_id']
         comments = Comment.objects.filter(restaurant_id=restaurant_id)
+        print("111111")
         serializer = self.get_serializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

@@ -51,13 +51,14 @@ class Order(models.Model):
 class OrderItem(models.Model):
     food = models.ForeignKey(Food,on_delete=models.DO_NOTHING,related_name="orderItems")
     quantity = models.IntegerField(default= 0)
-    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="orderItems")
+    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="order_orderItems")
 
 class Comment(models.Model):
     restaurant = models.ForeignKey(Restaurant,on_delete=models.CASCADE,related_name="comments")
     writer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     text = models.CharField(max_length=512, default="", blank=True)
     created_at = models.DateTimeField(auto_now_add= True)
+    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="comments", default=None)
     class Meta:
         ordering = ['-created_at']
     def __str__(self) -> str:
