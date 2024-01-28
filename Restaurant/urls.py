@@ -22,7 +22,7 @@ restaurant_router.register('food', FoodViewSet, basename='restaurant-food')
 
 urlpatterns = [
     path(r'', include(router.urls)),
-    path('<int:manager_id>/orderview/',RestaurantOrderViewAPI.as_view(),name = 'restaurant-orders-view'),
+    path('<int:manager_id>/orderview/',RestaurantManagerOrderViewAPI.as_view(),name = 'restaurant-orders-view'),
     path('restaurant_view/<int:restaurant_id>/<int:userId>/order/',OrderAPIView.as_view(), name = 'order-detail'),
     path('restaurant_view/<int:restaurant_id>/<int:userId>/order/<uuid:order_id>/',UpdateOrderStatusAPI.as_view(), name = 'update-order-status'),
     path('restaurant_view/<int:restaurant_id>/<int:userId>/order/add_to_order/<int:food_id>/',add_to_Order, name = 'add-to-order'),
@@ -33,7 +33,7 @@ urlpatterns = [
     path('managers/<int:manager_id>/restaurants/<int:pk>/', RestaurantManagerRestaurantDetailView.as_view(), name='restaurant-detail'),
     path('managers/<int:manager_id>/restaurants/<int:restaurant_id>/food/', ManagerFoodListCreateAPIView.as_view(), name='food-list'),
     path('managers/<int:manager_id>/restaurants/<int:restaurant_id>/food/<int:pk>/',  ManagerFoodViewSet.as_view(), name='food-detail'),
-    path('comment/restaurant_id/<int:restaurant_id>/', CommentAPI.as_view(), name='comment'),
+    path('comment/restaurant_id/<int:restaurant_id>/<uuid:order_id>/', CommentAPI.as_view(), name='comment'),
     path('restaurant_id/<int:restaurant_id>/comments/', RestaurantCommentListAPIView.as_view(), name='restaurant-comments'),
     path('nearest_restaurant',SearchNearestRestaurant.search_nearest_restaurant,name='search_nearest_restaurant'),
     path('getaddr',get_addr,name='get_addr'),

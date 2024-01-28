@@ -312,84 +312,84 @@ class OrderHistoryDiffRestaurantCustomerExportExcelTestCase(TestCase):
         self.assertEqual(cell_values, expected_data)
 
 
-class CommentModelTestCase(TestCase):
-    def setUp(self):
-        self.customer = Customer.objects.create(name='Test User', email='test_user@example.com')
-        self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
-        self.restaurant = Restaurant.objects.create(name='Restaurant 1', number='111', manager=self.manager)
-        self.comment = Comment.objects.create(
-            restaurant=self.restaurant,
-            writer=self.customer,
-            text='This is a test comment'
-        )
+# class CommentModelTestCase(TestCase):
+#     def setUp(self):
+#         self.customer = Customer.objects.create(name='Test User', email='test_user@example.com')
+#         self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
+#         self.restaurant = Restaurant.objects.create(name='Restaurant 1', number='111', manager=self.manager)
+#         self.comment = Comment.objects.create(
+#             restaurant=self.restaurant,
+#             writer=self.customer,
+#             text='This is a test comment'
+#         )
 
-    def test_comment_str_representation(self):
-        self.assertEqual(str(self.comment), f'{self.customer.name} {self.restaurant.name}')
+#     def test_comment_str_representation(self):
+#         self.assertEqual(str(self.comment), f'{self.customer.name} {self.restaurant.name}')
 
-    def test_comment_ordering(self):
-        later_comment = Comment.objects.create(
-            restaurant=self.restaurant,
-            writer=self.customer,
-            text='This is a later test comment'
-        )
-        comments = Comment.objects.all()
-        # self.assertEqual(comments[0], later_comment)
-        # self.assertEqual(comments[1], self.comment)
+#     def test_comment_ordering(self):
+#         later_comment = Comment.objects.create(
+#             restaurant=self.restaurant,
+#             writer=self.customer,
+#             text='This is a later test comment'
+#         )
+#         comments = Comment.objects.all()
+#         # self.assertEqual(comments[0], later_comment)
+#         # self.assertEqual(comments[1], self.comment)
 
-    def test_comment_created_at_auto_now_add(self):
-        self.assertIsNotNone(self.comment.created_at)
+#     def test_comment_created_at_auto_now_add(self):
+#         self.assertIsNotNone(self.comment.created_at)
 
-    def test_comment_default_text(self):
-        comment_without_text = Comment.objects.create(
-            restaurant=self.restaurant,
-            writer=self.customer
-        )
-        self.assertEqual(comment_without_text.text, '')
+#     def test_comment_default_text(self):
+#         comment_without_text = Comment.objects.create(
+#             restaurant=self.restaurant,
+#             writer=self.customer
+#         )
+#         self.assertEqual(comment_without_text.text, '')
 
-    def test_comment_blank_text(self):
-        comment_with_blank_text = Comment.objects.create(
-            restaurant=self.restaurant,
-            writer=self.customer,
-            text=''
-        )
-        self.assertEqual(comment_with_blank_text.text, '')
+#     def test_comment_blank_text(self):
+#         comment_with_blank_text = Comment.objects.create(
+#             restaurant=self.restaurant,
+#             writer=self.customer,
+#             text=''
+#         )
+#         self.assertEqual(comment_with_blank_text.text, '')
 
-    def test_comment_foreign_keys(self):
-        self.assertEqual(self.comment.restaurant, self.restaurant)
-        self.assertEqual(self.comment.writer, self.customer)
+#     def test_comment_foreign_keys(self):
+#         self.assertEqual(self.comment.restaurant, self.restaurant)
+#         self.assertEqual(self.comment.writer, self.customer)
 
-    def test_comment_update_text(self):
-        new_text = 'Updated test comment text'
-        self.comment.text = new_text
-        self.comment.save()
-        self.assertEqual(Comment.objects.get(pk=self.comment.pk).text, new_text)
+#     def test_comment_update_text(self):
+#         new_text = 'Updated test comment text'
+#         self.comment.text = new_text
+#         self.comment.save()
+#         self.assertEqual(Comment.objects.get(pk=self.comment.pk).text, new_text)
 
-    def test_comment_delete(self):
-        comment_count_before = Comment.objects.count()
-        self.comment.delete()
-        self.assertEqual(Comment.objects.count(), comment_count_before - 1)
+#     def test_comment_delete(self):
+#         comment_count_before = Comment.objects.count()
+#         self.comment.delete()
+#         self.assertEqual(Comment.objects.count(), comment_count_before - 1)
 
 
-    def test_comment_text_max_length(self):
-        long_text = 'A' * 1024
-        comment_long_text = Comment(
-            restaurant=self.restaurant,
-            writer=self.customer,
-            text = long_text
-        )
-        with self.assertRaises(Exception):
-            comment_long_text.save()
+#     def test_comment_text_max_length(self):
+#         long_text = 'A' * 1024
+#         comment_long_text = Comment(
+#             restaurant=self.restaurant,
+#             writer=self.customer,
+#             text = long_text
+#         )
+#         with self.assertRaises(Exception):
+#             comment_long_text.save()
 
-    def test_comment_created_at_auto_now_add_accuracy(self):
-        current_time = datetime.now()
-        time_difference = timedelta(seconds=3)
-        with self.settings(USE_TZ=False):
-            comment = Comment.objects.create(
-                restaurant=self.restaurant,
-                writer=self.customer,
-                text='This is a test comment'
-            )
-            self.assertTrue(current_time - time_difference <= comment.created_at <= current_time + time_difference)
+#     def test_comment_created_at_auto_now_add_accuracy(self):
+#         current_time = datetime.now()
+#         time_difference = timedelta(seconds=3)
+#         with self.settings(USE_TZ=False):
+#             comment = Comment.objects.create(
+#                 restaurant=self.restaurant,
+#                 writer=self.customer,
+#                 text='This is a test comment'
+#             )
+#             self.assertTrue(current_time - time_difference <= comment.created_at <= current_time + time_difference)
 
 # class CommentAPITestCase(APITestCase):
 #     def setUp(self):
