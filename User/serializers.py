@@ -124,7 +124,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ('name', 'role', 'email' ,'address','wallet_balance','gender','phone_number','date_of_birth','lat','lon','password')
+        fields = ('name', 'role', 'email' ,'address','wallet_balance','gender','phone_number','date_of_birth','lat','lon','password', 'customer_img')
         extra_kwargs = {
             'wallet_balance': {'read_only': True},
             'name' : {'required': False, 'allow_blank': True},
@@ -158,6 +158,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         instance.lat = validated_data.get('lat', instance.lat)
         instance.lon = validated_data.get('lon', instance.lon)
         instance.role = validated_data.get('role', instance.role)
+        instance.customer_img = validated_data.get('customer_img', instance.customer_img)
         # password = validated_data.get('password',instance.password)
         # if password:
         #     instance.set_password(password)
