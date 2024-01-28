@@ -324,7 +324,7 @@ class DatabaseConnectionTests(TestCase):
         with connection.cursor() as cursor:
             cursor.execute('SELECT current_database()')
             result = cursor.fetchone()
-        self.assertEqual(result[0], 'test_postgres')
+        self.assertEqual(result[0], 'test_nowaste')
 
     def test_create_and_retrieve_model(self):
         MyAuthor.objects.create(name='Test Item', email='test@example.com')
