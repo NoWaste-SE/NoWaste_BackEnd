@@ -12,13 +12,16 @@ from User.views import OrderViewSet2
 from User.models import MyAuthor
 from .models import *
 from .serializers import *
+from .views import *
 import random , string
 from django.db import connection
 import openpyxl
 from django.core.files.base import ContentFile
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import AccessToken
+
 
 class UserActionsTestCase(APITestCase):
-
     custId = -1
     def signup(self,email,name):
         response = self.client.post(
@@ -70,59 +73,14 @@ class UserActionsTestCase(APITestCase):
         token = self.login(email,passw)
         return token
 
-class UserActionsTestCase(APITestCase):
+def GetUserByToken(token):
+    try:
+        decoded_token = AccessToken(token)
+        user = decoded_token.payload.get('user_id')
+        return user
+    except Exception as e:
+        return None
 
-    custId = -1
-    def signup(self,email,name):
-        response = self.client.post(
-            reverse("signup"),
-            {
-                "name": name,
-                "email": email,
-            }
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    
-    def verify_email(self,name,passw,role,email):    
-        # Verify Email
-        response = self.client.post(
-            reverse("verify-email"),
-            {
-                "name": name,
-                "password": passw,
-                "role": role,
-                "email": email,
-                "code": VC_Codes.objects.get(email=email).vc_code,
-            }
-        )      
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    def createSuperUser(self,email,passw):
-        MyAuthor.objects.create_user(email = email,password = passw,is_admin = True,is_staff=True,is_superuser=True,role="admin")
-    
-    def get_customer_id(self):
-        return self.custId
-
-        # Login
-    def login(self,email,passw):
-        response = self.client.post(
-            reverse("login"),
-            {
-                "email": email,
-                "password": passw,
-            },
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)        
-        # Get Token
-        token = response.data['access_token']
-        self.custId = response.data['id']
-        # self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        return token
-    def signup_verifyEmail_login(self,email,passw,name,role):
-        self.signup(email,name)
-        self.verify_email(name,passw,role,email)
-        token = self.login(email,passw)
-        return token
-    
 class ForgotPasswordViewSetTests(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -539,3 +497,196 @@ class TempManagerRejectionTestCase(TempManagerAPITestCase):
         # self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
+class ChargeWalletViewTest(UserActionsTestCase):
+    def setUp(self):
+        self.url = reverse('charge-wallet')
+
+    def test_charge_wallet_success(self):
+        token = self.signup_verifyEmail_login("test@example.com", "testpassword", "testuser", "customer")    
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer_id = GetUserByToken(token)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        response = self.client.get(self.url)
+        data = {'email': 'test@example.com', 'amount': 50}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        self.assertEqual(self.customer.wallet_balance, 50.00)
+
+    def test_charge_wallet_invalid_data(self):
+        token = self.signup_verifyEmail_login("test@example.com", "testpassword", "testuser", "customer")    
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer_id = GetUserByToken(token)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        data = {'invalid_key': 'invalid_value'}  
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_charge_wallet_customer_not_found(self):
+        token = self.signup_verifyEmail_login("test@example.com", "testpassword", "testuser", "customer")    
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer_id = GetUserByToken(token)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        data = {'email': 'nonexistent@example.com', 'amount': 50}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_wallet_data(self):
+        token = self.signup_verifyEmail_login("test@example.com", "testpassword", "testuser", "customer")    
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer_id = GetUserByToken(token)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_charge_wallet_negative_amount(self):
+        token = self.signup_verifyEmail_login("test@example.com", "testpassword", "testuser", "customer")    
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer_id = GetUserByToken(token)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        data = {'email': 'test@example.com', 'amount': -50}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(self.customer.wallet_balance, 0.00)
+
+    def test_charge_wallet_zero_amount(self):
+        token = self.signup_verifyEmail_login("test@example.com", "testpassword", "testuser", "customer")    
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer_id = GetUserByToken(token)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        data = {'email': 'test@example.com', 'amount': 0}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(self.customer.wallet_balance, 0.00)
+
+    def test_get_wallet_data_unauthenticated(self):
+        data = {'email': 'test@example.com', 'amount': 50}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+
+class WithdrawFromWalletViewTest(UserActionsTestCase):
+    def setUp(self):
+        self.url = reverse('withdraw-wallet')
+
+    def test_withdraw_from_wallet_success(self):
+        token = self.signup_verifyEmail_login("test@example.com", "testpassword", "testuser", "customer")    
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer_id = GetUserByToken(token)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        self.customer.wallet_balance = 200
+        self.customer.save()
+        data = {'email': 'test@example.com', 'amount': 50}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        self.assertEqual(self.customer.wallet_balance, 150.00)
+
+    def test_withdraw_from_wallet_insufficient_balance(self):
+        token = self.signup_verifyEmail_login("test@example.com", "testpassword", "testuser", "customer")    
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer_id = GetUserByToken(token)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        self.customer.wallet_balance = 200
+        self.customer.save()
+        data = {'email': 'test@example.com', 'amount': 250}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data, "The wallet balance is insufficient")
+        
+
+    def test_withdraw_from_wallet_invalid_data(self):
+        token = self.signup_verifyEmail_login("test@example.com", "testpassword", "testuser", "customer")    
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer_id = GetUserByToken(token)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        data = {'invalid_key': 'invalid_value'}  
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_withdraw_from_wallet_customer_not_found(self):
+        token = self.signup_verifyEmail_login("test@example.com", "testpassword", "testuser", "customer")    
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer_id = GetUserByToken(token)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        data = {'email': 'nonexistent@example.com', 'amount': 50}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_wallet_data_withdraw(self):
+        token = self.signup_verifyEmail_login("test@example.com", "testpassword", "testuser", "customer")    
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer_id = GetUserByToken(token)
+        self.customer = Customer.objects.get(id=self.customer_id)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_wallet_data_unauthenticated_withraw(self):
+        data = {'email': 'test@example.com', 'amount': 50}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+class ShowAllCountryViewTest(APITestCase):
+    def setUp(self):
+        Country.objects.create(name='Country1')
+        Country.objects.create(name='Country2')
+        Country.objects.create(name='Country3')
+        self.url = reverse('all-countries')
+
+    def test_show_all_countries_success(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), Country.objects.count())
+
+    def test_show_all_countries_response_structure(self):
+        response = self.client.get(self.url)
+        expected_data = CountrySerializer(Country.objects.all(), many=True).data
+        self.assertEqual(response.data, expected_data)
+
+    def test_show_all_countries_empty_list(self):
+        Country.objects.all().delete()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+
+    def test_show_all_countries_invalid_method(self):
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_show_all_countries_invalid_endpoint(self):
+        url = '/invalid_endpoint/' 
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class CitiesOfCountryViewTest(APITestCase):
+    def setUp(self):
+        self.country = Country.objects.create(name='TestCountry')
+        self.city1 = City.objects.create(name='City1', country=self.country)
+        self.city2 = City.objects.create(name='City2', country=self.country)
+        self.url = reverse('cities-of-country')
+
+    def test_cities_of_country_success(self):
+        data = {'name': 'TestCountry'}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), City.objects.filter(country=self.country).count())
+
+    def test_cities_of_country_response_structure(self):
+        data = {'name': 'TestCountry'}
+        response = self.client.post(self.url, data, format='json')
+        expected_data = CitySerializer(City.objects.filter(country=self.country), many=True).data
+        self.assertEqual(response.data, expected_data)
+
+    def test_cities_of_country_invalid_method(self):
+        response = self.client.put(self.url)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_cities_of_country_empty_list(self):
+        City.objects.all().delete()
+        data = {'name': 'TestCountry'}
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+
+    def test_get_countries_success(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

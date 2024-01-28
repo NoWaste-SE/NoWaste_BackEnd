@@ -123,7 +123,6 @@ class RestaurantCustomerView(mixins.ListModelMixin,mixins.RetrieveModelMixin,vie
 class FoodViewSet(ModelViewSet):
     serializer_class = FoodSerializer
     def get_queryset(self):
-        print(self.kwargs)
         return Food.objects.filter(restaurant_id=self.kwargs['restaurant__id'])
 
     def get_serializer_context(self):

@@ -8,14 +8,16 @@ from django.urls import reverse
 from User.models import *
 # from rest_framework_simplejwt.tokens import AccessToken
 from .models import *
+from .serializer import *
 from rest_framework.test import APIClient,APITestCase
 from rest_framework import status
 from datetime import datetime
 import openpyxl
 from django.core.files.base import ContentFile
 from User.tests import UserActionsTestCase
+import time
 
-
+from .views import RestaurantProfileViewSet
 
 # # creat test for orderviewset2
 # class OrderViewSet2Test(APITestCase):
@@ -609,3 +611,364 @@ class RestaurantSearchViewSetTestCase(APITestCase):
         rates = [item['rate'] for item in response.data]
         self.assertEqual(rates, sorted(rates, reverse=True))
         self.assertTrue(all(float(discount) <= 0.1 for discount in discounts))
+
+# class RestaurantProfileViewSetTestCase(TestCase):
+#     def setUp(self):
+#         # self.url = reverse(viewname= "RestaurantProfileViewSet")
+#         self.manager = RestaurantManager.objects.create(
+#             email='manager@example.com',
+#             name='Test Manager',
+#             password='managerpassword',
+#             role='restaurant'
+#         )
+#         self.restaurant = Restaurant.objects.create(
+#             type='Iranian',
+#             address='Test Address',
+#             name='Test Restaurant',
+#             manager=self.manager
+#         )
+#         self.restaurant2 = Restaurant.objects.create(
+#             type='Iranian',
+#             address='Test Address',
+#             name='Test Restaurant2',
+#             manager=self.manager
+#         )
+#         self.user_actoin = UserActionsTestCase()
+#     # check authentication
+#     def test_check_authenticatoin(self):
+#         self.url = reverse('rest-profile-get')
+#         response = self.client.get(self.url)
+#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+#         token = self.user_actoin.login(self.manager.email,self.manager.password)
+#         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+#         response = self.client.get(self.url)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#     # def
+#     # check for method not Allowed 
+
+#     # check for 
+
+class RecentlyViewedRestaurantTestCase(TestCase):
+    def setUp(self):
+        self.customer = Customer.objects.create(name='John Doe', email = 'JohnDoe@gmail.com')
+        self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
+        self.restaurant = Restaurant.objects.create(name='Sample Restaurant', number='111', manager=self.manager)
+
+    def test_recently_viewed_restaurant_creation(self):
+        viewed_record = RecentlyViewedRestaurant.objects.create(
+            user=self.customer,
+            restaurant=self.restaurant
+        )
+        self.assertIsInstance(viewed_record, RecentlyViewedRestaurant)
+        self.assertIsNotNone(viewed_record.viewed_at)
+
+    def test_ordering_by_viewed_at(self):
+        viewed_record_1 = RecentlyViewedRestaurant.objects.create(
+            user=self.customer,
+            restaurant=self.restaurant
+        )
+        time.sleep(0.5)
+        viewed_record_2 = RecentlyViewedRestaurant.objects.create(
+            user=self.customer,
+            restaurant=self.restaurant
+        )
+        self.assertGreater(viewed_record_2.viewed_at, viewed_record_1.viewed_at)
+
+    def test_viewed_at_auto_now_add(self):
+        viewed_record = RecentlyViewedRestaurant.objects.create(
+            user=self.customer,
+            restaurant=self.restaurant
+        )
+        old_viewed_at = viewed_record.viewed_at
+        viewed_record.viewed_at = timezone.now()
+        viewed_record.save()
+        rounded_old_viewed_at = old_viewed_at.replace(microsecond=0)
+        rounded_new_viewed_at = viewed_record.viewed_at.replace(microsecond=0)
+        self.assertEqual(rounded_new_viewed_at, rounded_old_viewed_at)
+        time_difference = abs(viewed_record.viewed_at - old_viewed_at)
+        self.assertLessEqual(time_difference, timedelta(seconds=1))
+
+    def test_user_foreign_key(self):
+        with self.assertRaises(Exception):
+            RecentlyViewedRestaurant.objects.create(restaurant=self.restaurant)
+
+    def test_restaurant_foreign_key(self):
+        with self.assertRaises(Exception):
+            RecentlyViewedRestaurant.objects.create(user=self.customer)
+
+    def test_get_recently_viewed_restaurants(self):
+        for _ in range(5):
+            RecentlyViewedRestaurant.objects.create(
+                user=self.customer,
+                restaurant=self.restaurant
+            )
+        recently_viewed = RecentlyViewedRestaurant.objects.filter(user=self.customer)
+        self.assertEqual(recently_viewed.count(), 5)
+
+    def test_delete_recently_viewed_record(self):
+        viewed_record = RecentlyViewedRestaurant.objects.create(
+            user=self.customer,
+            restaurant=self.restaurant
+        )
+        viewed_record.delete()
+        with self.assertRaises(RecentlyViewedRestaurant.DoesNotExist):
+            RecentlyViewedRestaurant.objects.get(pk=viewed_record.pk)
+
+    def test_update_recently_viewed_record(self):
+        viewed_record = RecentlyViewedRestaurant.objects.create(
+            user=self.customer,
+            restaurant=self.restaurant
+        )
+        new_restaurant = Restaurant.objects.create(name='New Restaurant', number='222', manager=self.manager)
+        viewed_record.restaurant = new_restaurant
+        viewed_record.save()
+        updated_record = RecentlyViewedRestaurant.objects.get(pk=viewed_record.pk)
+        self.assertEqual(updated_record.restaurant, new_restaurant)
+
+
+class RecentlyViewedRestaurantsCustomerViewTest(TestCase):
+    def setUp(self):
+        self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
+        self.restaurant1 = Restaurant.objects.create(name='Restaurant 1', number='111', manager=self.manager)
+        self.restaurant2 = Restaurant.objects.create(name='Restaurant 2', number='222', manager=self.manager)
+        self.customer_id = 0
+        self.url = reverse('recently-viewed')
+        self.client = APIClient()
+    def athenticate(self, email, passw, name, role):
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "name": name,
+                "email": email,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(
+            reverse("verify-email"),
+            {
+                "name": name,
+                "password": passw,
+                "role": role,
+                "email": email,
+                "code": VC_Codes.objects.get(email=email).vc_code,
+            })      
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(
+            reverse("login"),
+            {
+                "email": email,
+                "password": passw,
+            },)
+        self.customer_id = response.data['id']
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        token = response.data['access_token']
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.customer = Customer.objects.get(email= email)
+        self.viewed_record1 = RecentlyViewedRestaurant.objects.create(user=self.customer, restaurant=self.restaurant1)
+        time.sleep(0.5)
+        self.viewed_record2 = RecentlyViewedRestaurant.objects.create(user=self.customer, restaurant=self.restaurant2)
+
+    def test_get_recently_viewed_restaurants(self):
+        self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer") 
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, RecentlyViewedRestaurantSerializer([self.viewed_record2, self.viewed_record1], many=True).data)
+
+    def test_unauthenticated_request(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_recently_viewed_limit(self):
+        self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer") 
+        for i in range(5):
+            RecentlyViewedRestaurant.objects.create(user=self.customer, restaurant=Restaurant.objects.create(name=f'Restaurant{i}', number=f'{i}', manager=self.manager))
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 6)
+
+    def test_get_recently_viewed_empty(self):
+        self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer") 
+        RecentlyViewedRestaurant.objects.all().delete()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
+    def test_get_recently_viewed_different_user(self):
+        self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer") 
+        other_customer = Customer.objects.create(email='other@gmail.com', name='other user')
+        RecentlyViewedRestaurant.objects.create(user=other_customer, restaurant=self.restaurant1)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(len(response.data), 3) # 3 != 2
+        self.assertEqual(response.data[0]['restaurant']['name'], self.restaurant2.name)
+
+    def test_get_recently_viewed_invalid_token(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer invalid_token')
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_recently_viewed_invalid_method(self):
+        self.athenticate('test_user@example.com', "test_pass", 'Test User', "customer") 
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_get_recently_viewed_invalid_authentication(self):
+        self.client.credentials(HTTP_AUTHORIZATION='')
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class FoodViewSetTestCase(TestCase):
+    def setUp(self):
+        self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
+        self.restaurant = Restaurant.objects.create(name='Test Restaurant', number='123', manager=self.manager)
+        self.food = Food.objects.create(name='Test Food', price=10.0, restaurant=self.restaurant)
+        self.client = APIClient()
+
+    def test_get_queryset(self):
+        url = reverse('restaurant-food-list', kwargs={'restaurant__id': self.restaurant.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], self.food.name)
+
+    def test_patch_food(self):
+        new_name = 'Updated Food Name'
+        data = {'name': new_name}
+        url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': self.food.id})
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_food = Food.objects.get(id=self.food.id)
+        self.assertEqual(updated_food.name, new_name)
+
+    # def test_patch_invalid_data(self):
+    #     invalid_data = {'invalid_field': 'Invalid Value'}
+    #     url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': self.food.id})
+    #     response = self.client.patch(url, invalid_data, format='json')
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_nonexistent_food(self):
+        nonexistent_id = 999
+        url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': nonexistent_id})
+        response = self.client.patch(url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_food(self):
+        data = {'name': 'New Food', 'restaurant_id': self.restaurant.id}
+        url = reverse('restaurant-food-list', kwargs={'restaurant__id': self.restaurant.id})
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        new_food = Food.objects.get(id=response.data['id'])
+        self.assertEqual(new_food.name, 'New Food')
+
+    def test_create_food_invalid_data(self):
+        invalid_data = {'invalid_field': 'Invalid Value'}
+        url = reverse('restaurant-food-list', kwargs={'restaurant__id': self.restaurant.id})
+        response = self.client.post(url, invalid_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_food_detail(self):
+        url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': self.food.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.food.name)
+
+    def test_get_food_detail_nonexistent_food(self):
+        nonexistent_id = 999
+        url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': nonexistent_id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_food(self):
+        url = reverse('restaurant-food-detail', kwargs={'restaurant__id': self.restaurant.id, 'pk': self.food.id})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        with self.assertRaises(Food.DoesNotExist):
+            Food.objects.get(id=self.food.id)
+
+class CartAPIViewTestCase(APITestCase):
+    def setUp(self):
+        self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
+        self.restaurant = Restaurant.objects.create(name='Test Restaurant', number='123', manager=self.manager)
+        self.food = Food.objects.create(name='Test Food', price=10, restaurant=self.restaurant)
+        self.user = Customer.objects.create(name='Test User', email='test_user@example.com')
+        self.order = Order.objects.create(userId=self.user, status='Delivered', restaurant=self.restaurant)
+        OrderItem.objects.create(order=self.order, food=self.food, quantity=2)
+    
+    def athenticate(self, email, passw, name, role):
+        # SignUp
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "name": name,
+                "email": email,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Verify Email
+        response = self.client.post(
+            reverse("verify-email"),
+            {
+                "name": name,
+                "password": passw,
+                "role": role,
+                "email": email,
+                "code": VC_Codes.objects.get(email=email).vc_code,
+            }
+        )      
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Login
+        response = self.client.post(
+            reverse("login"),
+            {
+                "email": email,
+                "password": passw,
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Get Token
+        token = response.data['access_token']
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        
+        # Get User
+        self.user = Customer.objects.get(email=email)
+
+        
+    def test_get_cart_existing_cart(self):
+        self.athenticate("test_email@gmail.com", "test_pass", "test_name", "customer") 
+        url = reverse('cart', kwargs={'userId': self.user.id})
+        self.cart = Cart.objects.create(user=self.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['id'], self.cart.id)
+        self.assertEqual(response.data[0]['user'], self.user.id)
+        self.assertEqual(response.data[0]['orders'], [])
+    
+    def test_get_cart_no_existing_cart(self):
+        self.athenticate("test_email_no_cart@gmail.com", "test_pass", "test_name", "customer")
+        url = reverse('cart', kwargs={'userId': self.user.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        cart_instance = Cart.objects.get(user__id=self.user.id)
+        self.assertEqual(response.data['id'], cart_instance.id)
+        self.assertEqual(response.data['user'], self.user.id)
+        self.assertEqual(response.data['orders'], [])
+        
+
+# class OrderAPIViewTestCase(APITestCase):
+#     def setUp(self):
+#         self.manager = RestaurantManager.objects.create(name='Test Manager', email='test_manager@example.com')
+#         self.restaurant = Restaurant.objects.create(name='Test Restaurant', number='123', manager=self.manager)
+#         self.food = Food.objects.create(name='Test Food', price=10, restaurant=self.restaurant)
+#         self.user = Customer.objects.create(name='Test User', email='test_user@example.com')
+#         self.order = Order.objects.create(userId=self.user, status='Delivered', restaurant=self.restaurant)
+#         OrderItem.objects.create(order=self.order, food=self.food, quantity=2)
+        
+        
+           
+        
+        
+        
