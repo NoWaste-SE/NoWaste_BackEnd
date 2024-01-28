@@ -13,11 +13,11 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
-from environs import Env
+# from environs import Env
 
-# Environment Variables
-env = Env()
-env.read_env()
+# # Environment Variables
+# env = Env()
+# env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -111,19 +111,19 @@ ASGI_APPLICATION = "NoWaste.asgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env.str('DB_NAME'),
-        'USER': env.str('DB_USER'),    
-        'PASSWORD': env.str('DB_PASSWORD'),  
-        'HOST': env.str('DB_HOST'), 
-        'PORT': '5432',  
-        
         # 'ENGINE': 'django.db.backends.postgresql',
-        # 'NAME': 'postgres',
-        # 'USER': 'postgres',
-        # 'PASSWORD': 'newview-1',
-        # 'HOST': 'localhost', 
-        # 'PORT': '5432',
+        # 'NAME': env.str('DB_NAME'),
+        # 'USER': env.str('DB_USER'),    
+        # 'PASSWORD': env.str('DB_PASSWORD'),  
+        # 'HOST': env.str('DB_HOST'), 
+        # 'PORT': '5432',  
+        
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'newview-1',
+        'HOST': 'localhost', 
+        'PORT': '5432',
     }
 }
 # DATABASES = {
@@ -233,7 +233,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
-REDIS_HOST = os.environ.get('REDIS_HOST', '127.0.0.1')
+REDIS_HOST = os.environ.get('REDIS_HOST', '0.0.0.0')
 
 CHANNEL_LAYERS = {
     
