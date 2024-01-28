@@ -449,26 +449,6 @@ class RestaurantInfoExportExcel(APIView):
         wb.save(response)
         return response
 
-class OrderViewSet2(viewsets.ModelViewSet):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-    serializer_class = OrderSerializer2
-    
-    def get_queryset(self):
-        user = self.request.user
-        customer = Customer.objects.get(myauthor_ptr_id=user.id)
-        return Order2.objects.filter(customer=customer)
-
-class OrderItemViewSet2(viewsets.ModelViewSet):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-    serializer_class = OrderItemSerializer2
-    
-    def get_queryset(self):
-        user = self.request.user
-        customer = Customer.objects.get(myauthor_ptr_id=user.id)
-        return OrderItem2.objects.filter(order__customer=customer)
-
 class GetRestaurants(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
