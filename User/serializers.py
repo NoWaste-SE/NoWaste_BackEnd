@@ -158,7 +158,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         instance.lat = validated_data.get('lat', instance.lat)
         instance.lon = validated_data.get('lon', instance.lon)
         instance.role = validated_data.get('role', instance.role)
-        instance.customer_img = validated_data.get('customer_img', instance.customer_img)
+        instance.customer_img = validated_data.get('customer_img', instance.customer_img) #profile
         # password = validated_data.get('password',instance.password)
         # if password:
         #     instance.set_password(password)
