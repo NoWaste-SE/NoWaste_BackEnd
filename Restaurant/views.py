@@ -24,7 +24,7 @@ from django.http import JsonResponse
 import urllib
 from rest_framework.renderers import JSONRenderer
 from django.core import serializers
-# from profanity_check import predict, predict_prob
+from profanity_check import predict, predict_prob
 
 def GetUserByToken(request):
     authentication = JWTAuthentication()

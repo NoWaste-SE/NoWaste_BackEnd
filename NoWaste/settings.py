@@ -233,6 +233,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
+
 REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
 
 CHANNEL_LAYERS = {
